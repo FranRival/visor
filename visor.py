@@ -177,7 +177,8 @@ def guardar_recorte(event=None):
     ruta_guardado = os.path.join(carpeta_destino, f"{siguiente}.jpg")
     recorte.save(ruta_guardado, quality=95)
 
-    print(f"Guardado: {ruta_guardado}")
+    status_var.set(f"{siguiente}.jpg - guardada")
+
 
 
 # ==============================
@@ -205,6 +206,26 @@ def arrastrar(event):
 
     crop_y = max(0, min(nuevo_y, imagen_original.height - crop_h))
     renderizar()
+
+
+
+# ==============================
+# STATUS LABEL (INFERIOR DERECHA)
+# ==============================
+
+status_var = tk.StringVar()
+status_var.set("")
+
+status_label = tk.Label(
+    root,
+    textvariable=status_var,
+    anchor="e",
+    fg="green",
+    font=("Arial", 11)
+)
+
+status_label.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=5)
+
 
 
 # ==============================
