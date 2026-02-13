@@ -43,8 +43,8 @@ def seleccionar_carpeta():
     for item in os.listdir(carpeta_madre):
         ruta = os.path.join(carpeta_madre, item)
         if os.path.isdir(ruta):
-            subcarpetas.append(ruta)     # guardamos ruta real
-            list_sub.insert(tk.END, item)  # mostramos solo nombre
+            subcarpetas.append(ruta)
+            list_sub.insert(tk.END, item)
 
 
 # ==============================
@@ -65,8 +65,8 @@ def cargar_subcarpeta(event):
 
     for archivo in os.listdir(subcarpeta):
         if archivo.lower().endswith((".jpg", ".jpeg", ".png")):
-            imagenes.append(os.path.join(subcarpeta, archivo))  # ruta real
-            list_img.insert(tk.END, archivo)  # SOLO nombre
+            imagenes.append(os.path.join(subcarpeta, archivo))
+            list_img.insert(tk.END, archivo)
 
 
 # ==============================
@@ -85,7 +85,6 @@ def cargar_imagen(event):
 
     ancho, alto = imagen_original.size
 
-    # Rectángulo 16:9 al 80% del ancho
     crop_w = int(ancho * 0.8)
     crop_h = int(crop_w * 9 / 16)
 
@@ -120,12 +119,10 @@ def renderizar():
     crop_w_disp = int(crop_w / escala_x)
     crop_h_disp = int(crop_h / escala_y)
 
-    # Oscurecer
     overlay = Image.new("RGBA", img_display.size, (0, 0, 0, 120))
     img_display = img_display.convert("RGBA")
     img_display = Image.alpha_composite(img_display, overlay)
 
-    # Restaurar zona visible
     zona = img_display.crop((
         crop_x_disp,
         crop_y_disp,
@@ -134,7 +131,6 @@ def renderizar():
     ))
     img_display.paste(zona, (crop_x_disp, crop_y_disp))
 
-    # Borde rojo
     draw = ImageDraw.Draw(img_display)
     draw.rectangle(
         (
@@ -151,6 +147,37 @@ def renderizar():
 
     canvas.delete("all")
     canvas.create_image(400, 250, anchor=tk.CENTER, image=imagen_actual)
+
+
+# ==============================
+# GUARDAR RECORTE (TECLA S)
+# ==============================
+
+def guardar_recorte(event=None):
+    if imagen_original is None or not carpeta_madre:
+        return
+
+    carpeta_destino = os.path.join(carpeta_madre, "AAA")
+    os.makedirs(carpeta_destino, exist_ok=True)
+
+    # Calcular siguiente número disponible
+    existentes = [
+        int(f.split(".")[0])
+        for f in os.listdir(carpeta_destino)
+        if f.split(".")[0].isdigit()
+    ]
+
+    siguiente = max(existentes) + 1 if existentes else 1
+
+    # Recorte REAL en tamaño original
+    recorte = imagen_original.crop(
+        (crop_x, crop_y, crop_x + crop_w, crop_y + crop_h)
+    )
+
+    ruta_guardado = os.path.join(carpeta_destino, f"{siguiente}.jpg")
+    recorte.save(ruta_guardado, quality=95)
+
+    print(f"Guardado: {ruta_guardado}")
 
 
 # ==============================
@@ -204,5 +231,9 @@ canvas.pack(side=tk.RIGHT)
 canvas.bind("<ButtonPress-1>", iniciar_arrastre)
 canvas.bind("<ButtonRelease-1>", detener_arrastre)
 canvas.bind("<B1-Motion>", arrastrar)
+
+# 🔥 TECLA S
+root.bind("s", guardar_recorte)
+root.bind("S", guardar_recorte)
 
 root.mainloop()
