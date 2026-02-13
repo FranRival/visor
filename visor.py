@@ -48,6 +48,7 @@ def cargar_subcarpeta(event):
 
 def cargar_imagen(event):
     global imagen_original
+    global crop_x, crop_y, crop_w, crop_h
 
     if not list_img.curselection():
         return
@@ -55,7 +56,23 @@ def cargar_imagen(event):
     ruta = list_img.get(list_img.curselection()[0])
     imagen_original = Image.open(ruta)
 
+    ancho, alto = imagen_original.size
+
+    # 🔥 Rectángulo 16:9 al 80% del ancho
+    crop_w = int(ancho * 0.8)
+    crop_h = int(crop_w * 9 / 16)
+
+    # Si se pasa en alto, lo ajustamos
+    if crop_h > alto:
+        crop_h = int(alto * 0.8)
+        crop_w = int(crop_h * 16 / 9)
+
+    # Centrar
+    crop_x = (ancho - crop_w) // 2
+    crop_y = (alto - crop_h) // 2
+
     renderizar()
+
 
 
 def renderizar():
