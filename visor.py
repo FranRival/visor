@@ -7,44 +7,71 @@ from PIL import Image, ImageTk, ImageDraw
 # VARIABLES GLOBALES
 # ==============================
 
+root = tk.Tk()
+root.title("Visor Crop MVP")
+
 imagen_original = None
 imagen_actual = None
 
-crop_x = 50
-crop_y = 50
-crop_w = 300
-crop_h = 200
+imagenes = []
+subcarpetas = []
+
+carpeta_madre = ""
+
+crop_x = 0
+crop_y = 0
+crop_w = 0
+crop_h = 0
 
 dragging = False
 
 
 # ==============================
-# FUNCIONES
+# SELECCIONAR CARPETA MADRE
 # ==============================
 
 def seleccionar_carpeta():
-    carpeta = filedialog.askdirectory()
-    if not carpeta:
+    global carpeta_madre, subcarpetas
+
+    carpeta_madre = filedialog.askdirectory()
+    if not carpeta_madre:
         return
 
     list_sub.delete(0, tk.END)
-    for item in os.listdir(carpeta):
-        ruta = os.path.join(carpeta, item)
-        if os.path.isdir(ruta):
-            list_sub.insert(tk.END, ruta)
+    subcarpetas.clear()
 
+    for item in os.listdir(carpeta_madre):
+        ruta = os.path.join(carpeta_madre, item)
+        if os.path.isdir(ruta):
+            subcarpetas.append(ruta)     # guardamos ruta real
+            list_sub.insert(tk.END, item)  # mostramos solo nombre
+
+
+# ==============================
+# CARGAR IMÁGENES
+# ==============================
 
 def cargar_subcarpeta(event):
+    global imagenes
+
     if not list_sub.curselection():
         return
 
-    subcarpeta = list_sub.get(list_sub.curselection()[0])
+    indice = list_sub.curselection()[0]
+    subcarpeta = subcarpetas[indice]
 
     list_img.delete(0, tk.END)
+    imagenes.clear()
+
     for archivo in os.listdir(subcarpeta):
         if archivo.lower().endswith((".jpg", ".jpeg", ".png")):
-            list_img.insert(tk.END, os.path.join(subcarpeta, archivo))
+            imagenes.append(os.path.join(subcarpeta, archivo))  # ruta real
+            list_img.insert(tk.END, archivo)  # SOLO nombre
 
+
+# ==============================
+# MOSTRAR IMAGEN
+# ==============================
 
 def cargar_imagen(event):
     global imagen_original
@@ -53,27 +80,28 @@ def cargar_imagen(event):
     if not list_img.curselection():
         return
 
-    ruta = list_img.get(list_img.curselection()[0])
+    ruta = imagenes[list_img.curselection()[0]]
     imagen_original = Image.open(ruta)
 
     ancho, alto = imagen_original.size
 
-    # 🔥 Rectángulo 16:9 al 80% del ancho
+    # Rectángulo 16:9 al 80% del ancho
     crop_w = int(ancho * 0.8)
     crop_h = int(crop_w * 9 / 16)
 
-    # Si se pasa en alto, lo ajustamos
     if crop_h > alto:
         crop_h = int(alto * 0.8)
         crop_w = int(crop_h * 16 / 9)
 
-    # Centrar
     crop_x = (ancho - crop_w) // 2
     crop_y = (alto - crop_h) // 2
 
     renderizar()
 
 
+# ==============================
+# RENDERIZAR
+# ==============================
 
 def renderizar():
     global imagen_actual
@@ -81,7 +109,6 @@ def renderizar():
     if imagen_original is None:
         return
 
-    # Copia de imagen original
     img_display = imagen_original.copy()
     img_display.thumbnail((800, 500), Image.LANCZOS)
 
@@ -93,7 +120,7 @@ def renderizar():
     crop_w_disp = int(crop_w / escala_x)
     crop_h_disp = int(crop_h / escala_y)
 
-    # Overlay oscuro
+    # Oscurecer
     overlay = Image.new("RGBA", img_display.size, (0, 0, 0, 120))
     img_display = img_display.convert("RGBA")
     img_display = Image.alpha_composite(img_display, overlay)
@@ -107,7 +134,7 @@ def renderizar():
     ))
     img_display.paste(zona, (crop_x_disp, crop_y_disp))
 
-    # Dibujar borde rojo
+    # Borde rojo
     draw = ImageDraw.Draw(img_display)
     draw.rectangle(
         (
@@ -125,6 +152,10 @@ def renderizar():
     canvas.delete("all")
     canvas.create_image(400, 250, anchor=tk.CENTER, image=imagen_actual)
 
+
+# ==============================
+# DRAG VERTICAL
+# ==============================
 
 def iniciar_arrastre(event):
     global dragging
@@ -153,20 +184,17 @@ def arrastrar(event):
 # INTERFAZ
 # ==============================
 
-root = tk.Tk()
-root.title("Visor de Imágenes")
-
 frame_izq = tk.Frame(root)
 frame_izq.pack(side=tk.LEFT, fill=tk.Y)
 
 btn = tk.Button(frame_izq, text="Seleccionar Carpeta", command=seleccionar_carpeta)
 btn.pack(pady=5)
 
-list_sub = tk.Listbox(frame_izq, width=40)
+list_sub = tk.Listbox(frame_izq, width=35)
 list_sub.pack(padx=5, pady=5)
 list_sub.bind("<<ListboxSelect>>", cargar_subcarpeta)
 
-list_img = tk.Listbox(frame_izq, width=40)
+list_img = tk.Listbox(frame_izq, width=35)
 list_img.pack(padx=5, pady=5)
 list_img.bind("<<ListboxSelect>>", cargar_imagen)
 
