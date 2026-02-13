@@ -4,17 +4,26 @@ from tkinter import filedialog
 from PIL import Image, ImageTk, ImageDraw
 
 # ==============================
+# CONFIGURACIÓN
+# ==============================
+
+THUMB_SIZE = 120
+
+# ==============================
 # VARIABLES GLOBALES
 # ==============================
 
 root = tk.Tk()
 root.title("Visor Crop MVP")
+root.geometry("1200x650")
 
 imagen_original = None
 imagen_actual = None
 
 imagenes = []
 subcarpetas = []
+
+miniaturas = []
 
 carpeta_madre = ""
 
@@ -24,7 +33,6 @@ crop_w = 0
 crop_h = 0
 
 dragging = False
-
 
 # ==============================
 # SELECCIONAR CARPETA MADRE
@@ -46,13 +54,12 @@ def seleccionar_carpeta():
             subcarpetas.append(ruta)
             list_sub.insert(tk.END, item)
 
-
 # ==============================
-# CARGAR IMÁGENES
+# CARGAR SUBCARPETA Y GENERAR MINIATURAS
 # ==============================
 
 def cargar_subcarpeta(event):
-    global imagenes
+    global imagenes, miniaturas
 
     if not list_sub.curselection():
         return
@@ -60,27 +67,44 @@ def cargar_subcarpeta(event):
     indice = list_sub.curselection()[0]
     subcarpeta = subcarpetas[indice]
 
-    list_img.delete(0, tk.END)
     imagenes.clear()
+    miniaturas.clear()
+
+    for widget in frame_preview.winfo_children():
+        widget.destroy()
+
+    fila = 0
+    columna = 0
 
     for archivo in os.listdir(subcarpeta):
         if archivo.lower().endswith((".jpg", ".jpeg", ".png")):
-            imagenes.append(os.path.join(subcarpeta, archivo))
-            list_img.insert(tk.END, archivo)
 
+            ruta = os.path.join(subcarpeta, archivo)
+            imagenes.append(ruta)
+
+            img = Image.open(ruta)
+            img.thumbnail((THUMB_SIZE, THUMB_SIZE))
+            mini = ImageTk.PhotoImage(img)
+            miniaturas.append(mini)
+
+            lbl = tk.Label(frame_preview, image=mini, cursor="hand2")
+            lbl.grid(row=fila, column=columna, padx=5, pady=5)
+
+            lbl.bind("<Button-1>", lambda e, r=ruta: cargar_imagen_directa(r))
+
+            columna += 1
+            if columna == 3:
+                columna = 0
+                fila += 1
 
 # ==============================
-# MOSTRAR IMAGEN
+# CARGAR IMAGEN DESDE MINIATURA
 # ==============================
 
-def cargar_imagen(event):
+def cargar_imagen_directa(ruta):
     global imagen_original
     global crop_x, crop_y, crop_w, crop_h
 
-    if not list_img.curselection():
-        return
-
-    ruta = imagenes[list_img.curselection()[0]]
     imagen_original = Image.open(ruta)
 
     ancho, alto = imagen_original.size
@@ -96,7 +120,6 @@ def cargar_imagen(event):
     crop_y = (alto - crop_h) // 2
 
     renderizar()
-
 
 # ==============================
 # RENDERIZAR
@@ -148,9 +171,8 @@ def renderizar():
     canvas.delete("all")
     canvas.create_image(400, 250, anchor=tk.CENTER, image=imagen_actual)
 
-
 # ==============================
-# GUARDAR RECORTE (TECLA S)
+# GUARDAR RECORTE
 # ==============================
 
 def guardar_recorte(event=None):
@@ -160,7 +182,6 @@ def guardar_recorte(event=None):
     carpeta_destino = os.path.join(carpeta_madre, "AAA")
     os.makedirs(carpeta_destino, exist_ok=True)
 
-    # Calcular siguiente número disponible
     existentes = [
         int(f.split(".")[0])
         for f in os.listdir(carpeta_destino)
@@ -169,7 +190,6 @@ def guardar_recorte(event=None):
 
     siguiente = max(existentes) + 1 if existentes else 1
 
-    # Recorte REAL en tamaño original
     recorte = imagen_original.crop(
         (crop_x, crop_y, crop_x + crop_w, crop_y + crop_h)
     )
@@ -179,21 +199,17 @@ def guardar_recorte(event=None):
 
     status_var.set(f"{siguiente}.jpg - guardada")
 
-
-
 # ==============================
-# DRAG VERTICAL
+# DRAG
 # ==============================
 
 def iniciar_arrastre(event):
     global dragging
     dragging = True
 
-
 def detener_arrastre(event):
     global dragging
     dragging = False
-
 
 def arrastrar(event):
     global crop_y
@@ -207,27 +223,6 @@ def arrastrar(event):
     crop_y = max(0, min(nuevo_y, imagen_original.height - crop_h))
     renderizar()
 
-
-
-# ==============================
-# STATUS LABEL (INFERIOR DERECHA)
-# ==============================
-
-status_var = tk.StringVar()
-status_var.set("")
-
-status_label = tk.Label(
-    root,
-    textvariable=status_var,
-    anchor="e",
-    fg="green",
-    font=("Arial", 11)
-)
-
-status_label.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=5)
-
-
-
 # ==============================
 # INTERFAZ
 # ==============================
@@ -238,13 +233,12 @@ frame_izq.pack(side=tk.LEFT, fill=tk.Y)
 btn = tk.Button(frame_izq, text="Seleccionar Carpeta", command=seleccionar_carpeta)
 btn.pack(pady=5)
 
-list_sub = tk.Listbox(frame_izq, width=35)
+list_sub = tk.Listbox(frame_izq, width=30)
 list_sub.pack(padx=5, pady=5)
 list_sub.bind("<<ListboxSelect>>", cargar_subcarpeta)
 
-list_img = tk.Listbox(frame_izq, width=35)
-list_img.pack(padx=5, pady=5)
-list_img.bind("<<ListboxSelect>>", cargar_imagen)
+frame_preview = tk.Frame(frame_izq)
+frame_preview.pack(fill=tk.BOTH, expand=True)
 
 canvas = tk.Canvas(root, width=800, height=500, bg="gray")
 canvas.pack(side=tk.RIGHT)
@@ -253,7 +247,10 @@ canvas.bind("<ButtonPress-1>", iniciar_arrastre)
 canvas.bind("<ButtonRelease-1>", detener_arrastre)
 canvas.bind("<B1-Motion>", arrastrar)
 
-# 🔥 TECLA S
+status_var = tk.StringVar()
+status_label = tk.Label(root, textvariable=status_var, anchor="e", fg="green")
+status_label.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=5)
+
 root.bind("s", guardar_recorte)
 root.bind("S", guardar_recorte)
 
