@@ -1,0 +1,4 @@
+******Ejecutable para Windows. 
+
+**pantalla dividida en 3 pestanas
+**La pantalla izquierda, la imagen. La pantalla de en medio, la lista de las imagenes. La pantalla derecha la totalidad de las carpetas de la carpeta madre. 
