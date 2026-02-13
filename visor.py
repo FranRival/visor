@@ -3,202 +3,161 @@ import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk, ImageDraw
 
+# ==============================
 # VARIABLES GLOBALES
-root = tk.Tk()
-root.title("Visor Crop MVP")
+# ==============================
 
-carpeta_madre = ""
-subcarpetas = []
-imagenes = []
-imagen_actual = None
 imagen_original = None
+imagen_actual = None
 
-contador = 1
-destino_path = ""
-
-crop_x = 0
-crop_y = 0
-crop_w = 0
-crop_h = 0
+crop_x = 50
+crop_y = 50
+crop_w = 300
+crop_h = 200
 
 dragging = False
 
-# ------------------------
-# SELECCIONAR CARPETA MADRE
-# ------------------------
+
+# ==============================
+# FUNCIONES
+# ==============================
+
 def seleccionar_carpeta():
-    global carpeta_madre, subcarpetas
-    carpeta_madre = filedialog.askdirectory()
-    if not carpeta_madre:
-        return
-    cargar_subcarpetas()
-
-def cargar_subcarpetas():
-    global subcarpetas
-    list_cm.delete(0, tk.END)
-    subcarpetas = [
-        f for f in os.listdir(carpeta_madre)
-        if os.path.isdir(os.path.join(carpeta_madre, f)) and not f.startswith("[AAA")
-    ]
-    for s in subcarpetas:
-        list_cm.insert(tk.END, s)
-
-# ------------------------
-# CARGAR IMÁGENES
-# ------------------------
-def cargar_imagenes(event):
-    global imagenes, contador, destino_path
-    seleccion = list_cm.curselection()
-    if not seleccion:
+    carpeta = filedialog.askdirectory()
+    if not carpeta:
         return
 
-    contador = 1  # reinicia contador por carpeta madre
+    list_sub.delete(0, tk.END)
+    for item in os.listdir(carpeta):
+        ruta = os.path.join(carpeta, item)
+        if os.path.isdir(ruta):
+            list_sub.insert(tk.END, ruta)
 
-    sub = subcarpetas[seleccion[0]]
-    ruta = os.path.join(carpeta_madre, sub)
 
-    imagenes = [
-        f for f in os.listdir(ruta)
-        if f.lower().endswith((".jpg", ".jpeg", ".png"))
-    ]
+def cargar_subcarpeta(event):
+    if not list_sub.curselection():
+        return
+
+    subcarpeta = list_sub.get(list_sub.curselection()[0])
 
     list_img.delete(0, tk.END)
-    for img in imagenes:
-        list_img.insert(tk.END, img)
+    for archivo in os.listdir(subcarpeta):
+        if archivo.lower().endswith((".jpg", ".jpeg", ".png")):
+            list_img.insert(tk.END, os.path.join(subcarpeta, archivo))
 
-    # Crear carpeta destino
-    destino_path = os.path.join(carpeta_madre, "[AAA")
-    os.makedirs(destino_path, exist_ok=True)
 
-# ------------------------
-# MOSTRAR IMAGEN
-# ------------------------
-def mostrar_imagen(event):
-    global imagen_original, imagen_actual
-    global crop_x, crop_y, crop_w, crop_h
+def cargar_imagen(event):
+    global imagen_original
 
-    seleccion = list_img.curselection()
-    if not seleccion:
+    if not list_img.curselection():
         return
 
-    sub_index = list_cm.curselection()[0]
-    sub = subcarpetas[sub_index]
-    ruta = os.path.join(carpeta_madre, sub, imagenes[seleccion[0]])
-
-    imagen_original = Image.open(ruta).convert("RGB")
-
-    ancho, alto = imagen_original.size
-
-    # Rectángulo 16:9 al 80% del ancho
-    crop_w = int(ancho * 0.8)
-    crop_h = int(crop_w * 9 / 16)
-
-    crop_x = (ancho - crop_w) // 2
-    crop_y = (alto - crop_h) // 2
+    ruta = list_img.get(list_img.curselection()[0])
+    imagen_original = Image.open(ruta)
 
     renderizar()
+
 
 def renderizar():
     global imagen_actual
 
-    img = imagen_original.copy()
+    if imagen_original is None:
+        return
 
-    # Oscurecer imagen
-    overlay = Image.new("RGBA", img.size, (0, 0, 0, 120))
-    img = img.convert("RGBA")
-    img = Image.alpha_composite(img, overlay)
+    # Copia de imagen original
+    img_display = imagen_original.copy()
+    img_display.thumbnail((800, 500), Image.LANCZOS)
 
-    # Restaurar zona del crop
-    zona = imagen_original.crop((crop_x, crop_y, crop_x + crop_w, crop_y + crop_h))
-    img.paste(zona, (crop_x, crop_y))
+    escala_x = imagen_original.width / img_display.width
+    escala_y = imagen_original.height / img_display.height
 
-    # Dibujar borde
-    draw = ImageDraw.Draw(img)
+    crop_x_disp = int(crop_x / escala_x)
+    crop_y_disp = int(crop_y / escala_y)
+    crop_w_disp = int(crop_w / escala_x)
+    crop_h_disp = int(crop_h / escala_y)
+
+    # Overlay oscuro
+    overlay = Image.new("RGBA", img_display.size, (0, 0, 0, 120))
+    img_display = img_display.convert("RGBA")
+    img_display = Image.alpha_composite(img_display, overlay)
+
+    # Restaurar zona visible
+    zona = img_display.crop((
+        crop_x_disp,
+        crop_y_disp,
+        crop_x_disp + crop_w_disp,
+        crop_y_disp + crop_h_disp
+    ))
+    img_display.paste(zona, (crop_x_disp, crop_y_disp))
+
+    # Dibujar borde rojo
+    draw = ImageDraw.Draw(img_display)
     draw.rectangle(
-        (crop_x, crop_y, crop_x + crop_w, crop_y + crop_h),
+        (
+            crop_x_disp,
+            crop_y_disp,
+            crop_x_disp + crop_w_disp,
+            crop_y_disp + crop_h_disp
+        ),
         outline="red",
         width=3
     )
 
-    imagen_actual = ImageTk.PhotoImage(img.resize((800, 500)))
-    canvas.create_image(0, 0, anchor=tk.NW, image=imagen_actual)
+    imagen_actual = ImageTk.PhotoImage(img_display)
 
-# ------------------------
-# DRAG CON MOUSE
-# ------------------------
-def iniciar_drag(event):
+    canvas.delete("all")
+    canvas.create_image(400, 250, anchor=tk.CENTER, image=imagen_actual)
+
+
+def iniciar_arrastre(event):
     global dragging
     dragging = True
 
-def arrastrar(event):
-    global crop_y
-    if not dragging:
-        return
 
-    escala_y = imagen_original.size[1] / 500
-    nuevo_y = int(event.y * escala_y - crop_h / 2)
-
-    crop_y = max(0, min(nuevo_y, imagen_original.size[1] - crop_h))
-    renderizar()
-
-def finalizar_drag(event):
+def detener_arrastre(event):
     global dragging
     dragging = False
 
-# ------------------------
-# GUARDAR CON S
-# ------------------------
-def guardar(event):
-    global contador
 
-    if imagen_original is None:
+def arrastrar(event):
+    global crop_y
+
+    if not dragging or imagen_original is None:
         return
 
-    box = (crop_x, crop_y, crop_x + crop_w, crop_y + crop_h)
-    recorte = imagen_original.crop(box)
+    escala_y = imagen_original.height / canvas.winfo_height()
+    nuevo_y = int(event.y * escala_y - crop_h / 2)
 
-    nombre = os.path.join(destino_path, f"{contador}.jpg")
-    recorte.save(nombre, "JPEG", quality=95)
+    crop_y = max(0, min(nuevo_y, imagen_original.height - crop_h))
+    renderizar()
 
-    contador += 1
 
-    # avanzar automáticamente
-    actual = list_img.curselection()
-    if actual:
-        siguiente = actual[0] + 1
-        if siguiente < list_img.size():
-            list_img.selection_clear(0, tk.END)
-            list_img.selection_set(siguiente)
-            list_img.event_generate("<<ListboxSelect>>")
-
-# ------------------------
+# ==============================
 # INTERFAZ
-# ------------------------
-frame_top = tk.Frame(root)
-frame_top.pack()
+# ==============================
 
-canvas = tk.Canvas(frame_top, width=800, height=500)
-canvas.pack()
+root = tk.Tk()
+root.title("Visor de Imágenes")
 
-frame_bottom = tk.Frame(root)
-frame_bottom.pack(fill=tk.BOTH, expand=True)
+frame_izq = tk.Frame(root)
+frame_izq.pack(side=tk.LEFT, fill=tk.Y)
 
-list_cm = tk.Listbox(frame_bottom, width=30)
-list_cm.pack(side=tk.LEFT, fill=tk.BOTH)
-list_cm.bind("<<ListboxSelect>>", cargar_imagenes)
+btn = tk.Button(frame_izq, text="Seleccionar Carpeta", command=seleccionar_carpeta)
+btn.pack(pady=5)
 
-list_img = tk.Listbox(frame_bottom)
-list_img.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-list_img.bind("<<ListboxSelect>>", mostrar_imagen)
+list_sub = tk.Listbox(frame_izq, width=40)
+list_sub.pack(padx=5, pady=5)
+list_sub.bind("<<ListboxSelect>>", cargar_subcarpeta)
 
-canvas.bind("<ButtonPress-1>", iniciar_drag)
+list_img = tk.Listbox(frame_izq, width=40)
+list_img.pack(padx=5, pady=5)
+list_img.bind("<<ListboxSelect>>", cargar_imagen)
+
+canvas = tk.Canvas(root, width=800, height=500, bg="gray")
+canvas.pack(side=tk.RIGHT)
+
+canvas.bind("<ButtonPress-1>", iniciar_arrastre)
+canvas.bind("<ButtonRelease-1>", detener_arrastre)
 canvas.bind("<B1-Motion>", arrastrar)
-canvas.bind("<ButtonRelease-1>", finalizar_drag)
-
-root.bind("s", guardar)
-
-menu = tk.Menu(root)
-menu.add_command(label="Seleccionar Carpeta Madre", command=seleccionar_carpeta)
-root.config(menu=menu)
 
 root.mainloop()
