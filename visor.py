@@ -24,7 +24,6 @@ imagenes = []
 subcarpetas = []
 
 miniaturas = []
-thumbnail_cache = []
 
 carpeta_madre = ""
 
@@ -56,9 +55,8 @@ def seleccionar_carpeta():
             list_sub.insert(tk.END, item)
 
 # ==============================
-# CARGAR SUBCARPETA Y GENERAR MINIATURAS (OPTIMIZADO)
+# CARGAR SUBCARPETA (CARGA PROGRESIVA)
 # ==============================
-
 
 def cargar_subcarpeta(event):
     global imagenes, miniaturas
@@ -97,7 +95,7 @@ def cargar_subcarpeta(event):
         try:
             with Image.open(ruta) as img:
                 img = img.convert("RGB")
-                img.thumbnail((THUMB_SIZE, THUMB_SIZE), Image.LANCZOS)
+                img.thumbnail((THUMB_SIZE, THUMB_SIZE), Image.BILINEAR)
 
                 mini = ImageTk.PhotoImage(img)
                 miniaturas.append(mini)
@@ -116,15 +114,12 @@ def cargar_subcarpeta(event):
         except:
             pass
 
-        # 🔥 Carga progresiva (NO bloquea interfaz)
-        root.after(5, lambda: cargar_lote(index + 1))
+        root.after(1, lambda: cargar_lote(index + 1))
 
     cargar_lote()
 
-
-
 # ==============================
-# CARGAR IMAGEN DESDE MINIATURA
+# CARGAR IMAGEN
 # ==============================
 
 def cargar_imagen_directa(ruta):
@@ -283,12 +278,44 @@ canvas_preview.configure(yscrollcommand=scrollbar.set)
 canvas_preview.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-# 🔥 SCROLL CORREGIDO (solo afecta preview)
-def on_mousewheel(event):
+# ===== SCROLL CORRECTO Y ESTABLE =====
+
+def _on_mousewheel(event):
     canvas_preview.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
-canvas_preview.bind("<MouseWheel>", on_mousewheel)
-frame_preview.bind("<MouseWheel>", on_mousewheel)
+def _on_mousewheel_linux_up(event):
+    canvas_preview.yview_scroll(-1, "units")
+
+def _on_mousewheel_linux_down(event):
+    canvas_preview.yview_scroll(1, "units")
+
+def activar_scroll(event):
+    canvas_preview.focus_set()
+
+
+# ===== SCROLL WINDOWS CORREGIDO DEFINITIVO =====
+
+def _on_mousewheel(event):
+    canvas_preview.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+def _on_mousewheel_linux_up(event):
+    canvas_preview.yview_scroll(-1, "units")
+
+def _on_mousewheel_linux_down(event):
+    canvas_preview.yview_scroll(1, "units")
+
+def bind_scroll(event):
+    canvas_preview.bind_all("<MouseWheel>", _on_mousewheel)
+    canvas_preview.bind_all("<Button-4>", _on_mousewheel_linux_up)
+    canvas_preview.bind_all("<Button-5>", _on_mousewheel_linux_down)
+
+def unbind_scroll(event):
+    canvas_preview.unbind_all("<MouseWheel>")
+    canvas_preview.unbind_all("<Button-4>")
+    canvas_preview.unbind_all("<Button-5>")
+
+canvas_preview.bind("<Enter>", bind_scroll)
+canvas_preview.bind("<Leave>", unbind_scroll)
 
 
 
