@@ -24,6 +24,7 @@ imagenes = []
 subcarpetas = []
 
 miniaturas = []
+thumbnail_cache = []
 
 carpeta_madre = ""
 
@@ -55,7 +56,7 @@ def seleccionar_carpeta():
             list_sub.insert(tk.END, item)
 
 # ==============================
-# CARGAR SUBCARPETA Y GENERAR MINIATURAS
+# CARGAR SUBCARPETA Y GENERAR MINIATURAS (OPTIMIZADO)
 # ==============================
 
 def cargar_subcarpeta(event):
@@ -82,20 +83,32 @@ def cargar_subcarpeta(event):
             ruta = os.path.join(subcarpeta, archivo)
             imagenes.append(ruta)
 
-            img = Image.open(ruta)
-            img.thumbnail((THUMB_SIZE, THUMB_SIZE))
-            mini = ImageTk.PhotoImage(img)
-            miniaturas.append(mini)
+            try:
+                # 🔥 Abrimos correctamente y liberamos memoria
+                with Image.open(ruta) as img:
+                    img = img.convert("RGB")
+                    img.thumbnail((THUMB_SIZE, THUMB_SIZE), Image.LANCZOS)
 
-            lbl = tk.Label(frame_preview, image=mini, cursor="hand2")
-            lbl.grid(row=fila, column=columna, padx=5, pady=5)
+                    mini = ImageTk.PhotoImage(img)
+                    miniaturas.append(mini)
 
-            lbl.bind("<Button-1>", lambda e, r=ruta: cargar_imagen_directa(r))
+                    lbl = tk.Label(frame_preview, image=mini, cursor="hand2")
+                    lbl.image = mini
+                    lbl.grid(row=fila, column=columna, padx=5, pady=5)
 
-            columna += 1
-            if columna == 3:
-                columna = 0
-                fila += 1
+                    lbl.bind("<Button-1>", lambda e, r=ruta: cargar_imagen_directa(r))
+
+                    columna += 1
+                    if columna == 3:
+                        columna = 0
+                        fila += 1
+
+            except:
+                continue
+
+    # 🔥 Forzar actualización correcta
+    canvas_preview.update_idletasks()
+    canvas_preview.configure(scrollregion=canvas_preview.bbox("all"))
 
 # ==============================
 # CARGAR IMAGEN DESDE MINIATURA
@@ -227,21 +240,45 @@ def arrastrar(event):
 # INTERFAZ
 # ==============================
 
-frame_izq = tk.Frame(root)
+frame_izq = tk.Frame(root, width=350)
 frame_izq.pack(side=tk.LEFT, fill=tk.Y)
+frame_izq.pack_propagate(False)
 
 btn = tk.Button(frame_izq, text="Seleccionar Carpeta", command=seleccionar_carpeta)
 btn.pack(pady=5)
 
-list_sub = tk.Listbox(frame_izq, width=30)
-list_sub.pack(padx=5, pady=5)
+list_sub = tk.Listbox(frame_izq, width=30, height=8)
+list_sub.pack(padx=5, pady=5, fill=tk.X)
 list_sub.bind("<<ListboxSelect>>", cargar_subcarpeta)
 
-frame_preview = tk.Frame(frame_izq)
-frame_preview.pack(fill=tk.BOTH, expand=True)
+preview_container = tk.Frame(frame_izq)
+preview_container.pack(fill=tk.BOTH, expand=True)
+
+canvas_preview = tk.Canvas(preview_container)
+scrollbar = tk.Scrollbar(preview_container, orient="vertical", command=canvas_preview.yview)
+
+frame_preview = tk.Frame(canvas_preview)
+
+frame_preview.bind(
+    "<Configure>",
+    lambda e: canvas_preview.configure(scrollregion=canvas_preview.bbox("all"))
+)
+
+canvas_preview.create_window((0, 0), window=frame_preview, anchor="nw")
+canvas_preview.configure(yscrollcommand=scrollbar.set)
+
+canvas_preview.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+# 🔥 SCROLL CORREGIDO (solo afecta preview)
+def _on_mousewheel(event):
+    canvas_preview.yview_scroll(int(-1*(event.delta/120)), "units")
+
+canvas_preview.bind("<Enter>", lambda e: canvas_preview.bind("<MouseWheel>", _on_mousewheel))
+canvas_preview.bind("<Leave>", lambda e: canvas_preview.unbind("<MouseWheel>"))
 
 canvas = tk.Canvas(root, width=800, height=500, bg="gray")
-canvas.pack(side=tk.RIGHT)
+canvas.pack(side=tk.RIGHT, expand=True)
 
 canvas.bind("<ButtonPress-1>", iniciar_arrastre)
 canvas.bind("<ButtonRelease-1>", detener_arrastre)
