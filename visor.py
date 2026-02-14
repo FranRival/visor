@@ -22,7 +22,6 @@ imagen_actual = None
 
 imagenes = []
 subcarpetas = []
-
 miniaturas = []
 
 carpeta_madre = ""
@@ -55,7 +54,7 @@ def seleccionar_carpeta():
             list_sub.insert(tk.END, item)
 
 # ==============================
-# CARGAR SUBCARPETA (CARGA PROGRESIVA)
+# CARGAR SUBCARPETA (OPTIMIZADO)
 # ==============================
 
 def cargar_subcarpeta(event):
@@ -86,40 +85,46 @@ def cargar_subcarpeta(event):
     def cargar_lote(index=0):
         nonlocal fila, columna
 
-        if index >= len(imagenes):
-            canvas_preview.configure(scrollregion=canvas_preview.bbox("all"))
-            return
+        LOTE = 8  # miniaturas por ciclo
 
-        ruta = imagenes[index]
+        for _ in range(LOTE):
 
-        try:
-            with Image.open(ruta) as img:
-                img = img.convert("RGB")
-                img.thumbnail((THUMB_SIZE, THUMB_SIZE), Image.BILINEAR)
+            if index >= len(imagenes):
+                canvas_preview.configure(scrollregion=canvas_preview.bbox("all"))
+                return
 
-                mini = ImageTk.PhotoImage(img)
-                miniaturas.append(mini)
+            ruta = imagenes[index]
 
-                lbl = tk.Label(frame_preview, image=mini, cursor="hand2")
-                lbl.image = mini
-                lbl.grid(row=fila, column=columna, padx=5, pady=5)
+            try:
+                with Image.open(ruta) as img:
+                    img.draft("RGB", (THUMB_SIZE, THUMB_SIZE))
+                    img.thumbnail((THUMB_SIZE, THUMB_SIZE), Image.BILINEAR)
 
-                lbl.bind("<Button-1>", lambda e, r=ruta: cargar_imagen_directa(r))
+                    mini = ImageTk.PhotoImage(img)
+                    miniaturas.append(mini)
 
-                columna += 1
-                if columna == 3:
-                    columna = 0
-                    fila += 1
+                    lbl = tk.Label(frame_preview, image=mini, cursor="hand2")
+                    lbl.image = mini
+                    lbl.grid(row=fila, column=columna, padx=5, pady=5)
 
-        except:
-            pass
+                    lbl.bind("<Button-1>", lambda e, r=ruta: cargar_imagen_directa(r))
 
-        root.after(1, lambda: cargar_lote(index + 1))
+                    columna += 1
+                    if columna == 3:
+                        columna = 0
+                        fila += 1
+
+            except:
+                pass
+
+            index += 1
+
+        root.after(10, lambda: cargar_lote(index))
 
     cargar_lote()
 
 # ==============================
-# CARGAR IMAGEN
+# CARGAR IMAGEN GRANDE
 # ==============================
 
 def cargar_imagen_directa(ruta):
@@ -153,7 +158,7 @@ def renderizar():
         return
 
     img_display = imagen_original.copy()
-    img_display.thumbnail((800, 500), Image.LANCZOS)
+    img_display.thumbnail((800, 500), Image.BILINEAR)
 
     escala_x = imagen_original.width / img_display.width
     escala_y = imagen_original.height / img_display.height
@@ -278,46 +283,21 @@ canvas_preview.configure(yscrollcommand=scrollbar.set)
 canvas_preview.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-# ===== SCROLL CORRECTO Y ESTABLE =====
+# ===== SCROLL WINDOWS ESTABLE =====
 
 def _on_mousewheel(event):
     canvas_preview.yview_scroll(int(-1 * (event.delta / 120)), "units")
-
-def _on_mousewheel_linux_up(event):
-    canvas_preview.yview_scroll(-1, "units")
-
-def _on_mousewheel_linux_down(event):
-    canvas_preview.yview_scroll(1, "units")
-
-def activar_scroll(event):
-    canvas_preview.focus_set()
-
-
-# ===== SCROLL WINDOWS CORREGIDO DEFINITIVO =====
-
-def _on_mousewheel(event):
-    canvas_preview.yview_scroll(int(-1 * (event.delta / 120)), "units")
-
-def _on_mousewheel_linux_up(event):
-    canvas_preview.yview_scroll(-1, "units")
-
-def _on_mousewheel_linux_down(event):
-    canvas_preview.yview_scroll(1, "units")
 
 def bind_scroll(event):
     canvas_preview.bind_all("<MouseWheel>", _on_mousewheel)
-    canvas_preview.bind_all("<Button-4>", _on_mousewheel_linux_up)
-    canvas_preview.bind_all("<Button-5>", _on_mousewheel_linux_down)
 
 def unbind_scroll(event):
     canvas_preview.unbind_all("<MouseWheel>")
-    canvas_preview.unbind_all("<Button-4>")
-    canvas_preview.unbind_all("<Button-5>")
 
 canvas_preview.bind("<Enter>", bind_scroll)
 canvas_preview.bind("<Leave>", unbind_scroll)
 
-
+# ==============================
 
 canvas = tk.Canvas(root, width=800, height=500, bg="gray")
 canvas.pack(side=tk.RIGHT, expand=True)
