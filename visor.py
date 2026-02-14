@@ -59,6 +59,7 @@ def seleccionar_carpeta():
 # CARGAR SUBCARPETA Y GENERAR MINIATURAS (OPTIMIZADO)
 # ==============================
 
+
 def cargar_subcarpeta(event):
     global imagenes, miniaturas
 
@@ -74,41 +75,53 @@ def cargar_subcarpeta(event):
     for widget in frame_preview.winfo_children():
         widget.destroy()
 
+    archivos = [
+        f for f in os.listdir(subcarpeta)
+        if f.lower().endswith((".jpg", ".jpeg", ".png"))
+    ]
+
+    imagenes.extend([os.path.join(subcarpeta, f) for f in archivos])
+
     fila = 0
     columna = 0
 
-    for archivo in os.listdir(subcarpeta):
-        if archivo.lower().endswith((".jpg", ".jpeg", ".png")):
+    def cargar_lote(index=0):
+        nonlocal fila, columna
 
-            ruta = os.path.join(subcarpeta, archivo)
-            imagenes.append(ruta)
+        if index >= len(imagenes):
+            canvas_preview.configure(scrollregion=canvas_preview.bbox("all"))
+            return
 
-            try:
-                # 🔥 Abrimos correctamente y liberamos memoria
-                with Image.open(ruta) as img:
-                    img = img.convert("RGB")
-                    img.thumbnail((THUMB_SIZE, THUMB_SIZE), Image.LANCZOS)
+        ruta = imagenes[index]
 
-                    mini = ImageTk.PhotoImage(img)
-                    miniaturas.append(mini)
+        try:
+            with Image.open(ruta) as img:
+                img = img.convert("RGB")
+                img.thumbnail((THUMB_SIZE, THUMB_SIZE), Image.LANCZOS)
 
-                    lbl = tk.Label(frame_preview, image=mini, cursor="hand2")
-                    lbl.image = mini
-                    lbl.grid(row=fila, column=columna, padx=5, pady=5)
+                mini = ImageTk.PhotoImage(img)
+                miniaturas.append(mini)
 
-                    lbl.bind("<Button-1>", lambda e, r=ruta: cargar_imagen_directa(r))
+                lbl = tk.Label(frame_preview, image=mini, cursor="hand2")
+                lbl.image = mini
+                lbl.grid(row=fila, column=columna, padx=5, pady=5)
 
-                    columna += 1
-                    if columna == 3:
-                        columna = 0
-                        fila += 1
+                lbl.bind("<Button-1>", lambda e, r=ruta: cargar_imagen_directa(r))
 
-            except:
-                continue
+                columna += 1
+                if columna == 3:
+                    columna = 0
+                    fila += 1
 
-    # 🔥 Forzar actualización correcta
-    canvas_preview.update_idletasks()
-    canvas_preview.configure(scrollregion=canvas_preview.bbox("all"))
+        except:
+            pass
+
+        # 🔥 Carga progresiva (NO bloquea interfaz)
+        root.after(5, lambda: cargar_lote(index + 1))
+
+    cargar_lote()
+
+
 
 # ==============================
 # CARGAR IMAGEN DESDE MINIATURA
@@ -271,11 +284,13 @@ canvas_preview.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
 # 🔥 SCROLL CORREGIDO (solo afecta preview)
-def _on_mousewheel(event):
-    canvas_preview.yview_scroll(int(-1*(event.delta/120)), "units")
+def on_mousewheel(event):
+    canvas_preview.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
-canvas_preview.bind("<Enter>", lambda e: canvas_preview.bind("<MouseWheel>", _on_mousewheel))
-canvas_preview.bind("<Leave>", lambda e: canvas_preview.unbind("<MouseWheel>"))
+canvas_preview.bind("<MouseWheel>", on_mousewheel)
+frame_preview.bind("<MouseWheel>", on_mousewheel)
+
+
 
 canvas = tk.Canvas(root, width=800, height=500, bg="gray")
 canvas.pack(side=tk.RIGHT, expand=True)
