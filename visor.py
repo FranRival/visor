@@ -2,6 +2,7 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk, ImageDraw
+import subprocess
 
 # ==============================
 # CONFIGURACIÓN
@@ -25,6 +26,9 @@ subcarpetas = []
 miniaturas = []
 
 carpeta_madre = ""
+carpeta_destino_actual = ""
+
+contador_guardado = 1
 
 crop_x = 0
 crop_y = 0
@@ -38,11 +42,20 @@ dragging = False
 # ==============================
 
 def seleccionar_carpeta():
-    global carpeta_madre, subcarpetas
+    global carpeta_madre, subcarpetas, contador_guardado, carpeta_destino_actual
 
     carpeta_madre = filedialog.askdirectory()
     if not carpeta_madre:
         return
+
+    # Reiniciar contador
+    contador_guardado = 1
+
+    # Nueva carpeta AAA
+    carpeta_destino_actual = os.path.join(carpeta_madre, "AAA")
+
+    # Limpiar status
+    status_var.set("")
 
     list_sub.delete(0, tk.END)
     subcarpetas.clear()
@@ -54,7 +67,23 @@ def seleccionar_carpeta():
             list_sub.insert(tk.END, item)
 
 # ==============================
-# CARGAR SUBCARPETA (OPTIMIZADO)
+# ABRIR CARPETA AAA
+# ==============================
+
+def abrir_carpeta_aaa():
+    global carpeta_destino_actual
+
+    if not carpeta_destino_actual:
+        return
+
+    os.makedirs(carpeta_destino_actual, exist_ok=True)
+
+    # Abrir exactamente la carpeta donde se guardan los recortes
+    os.startfile(carpeta_destino_actual)
+
+
+# ==============================
+# CARGAR SUBCARPETA
 # ==============================
 
 def cargar_subcarpeta(event):
@@ -85,7 +114,7 @@ def cargar_subcarpeta(event):
     def cargar_lote(index=0):
         nonlocal fila, columna
 
-        LOTE = 8  # miniaturas por ciclo
+        LOTE = 8
 
         for _ in range(LOTE):
 
@@ -202,28 +231,24 @@ def renderizar():
 # ==============================
 
 def guardar_recorte(event=None):
-    if imagen_original is None or not carpeta_madre:
+    global contador_guardado
+
+    if imagen_original is None or not carpeta_destino_actual:
         return
 
-    carpeta_destino = os.path.join(carpeta_madre, "AAA")
-    os.makedirs(carpeta_destino, exist_ok=True)
+    os.makedirs(carpeta_destino_actual, exist_ok=True)
 
-    existentes = [
-        int(f.split(".")[0])
-        for f in os.listdir(carpeta_destino)
-        if f.split(".")[0].isdigit()
-    ]
-
-    siguiente = max(existentes) + 1 if existentes else 1
+    ruta_guardado = os.path.join(carpeta_destino_actual, f"{contador_guardado}.jpg")
 
     recorte = imagen_original.crop(
         (crop_x, crop_y, crop_x + crop_w, crop_y + crop_h)
     )
 
-    ruta_guardado = os.path.join(carpeta_destino, f"{siguiente}.jpg")
     recorte.save(ruta_guardado, quality=95)
 
-    status_var.set(f"{siguiente}.jpg - guardada")
+    status_var.set(f"{contador_guardado}.jpg - guardada")
+
+    contador_guardado += 1
 
 # ==============================
 # DRAG
@@ -283,8 +308,6 @@ canvas_preview.configure(yscrollcommand=scrollbar.set)
 canvas_preview.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-# ===== SCROLL WINDOWS ESTABLE =====
-
 def _on_mousewheel(event):
     canvas_preview.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
@@ -297,8 +320,6 @@ def unbind_scroll(event):
 canvas_preview.bind("<Enter>", bind_scroll)
 canvas_preview.bind("<Leave>", unbind_scroll)
 
-# ==============================
-
 canvas = tk.Canvas(root, width=800, height=500, bg="gray")
 canvas.pack(side=tk.RIGHT, expand=True)
 
@@ -306,9 +327,21 @@ canvas.bind("<ButtonPress-1>", iniciar_arrastre)
 canvas.bind("<ButtonRelease-1>", detener_arrastre)
 canvas.bind("<B1-Motion>", arrastrar)
 
+# ==============================
+# PANEL INFERIOR DERECHO
+# ==============================
+
+right_panel = tk.Frame(root)
+right_panel.place(relx=1.0, rely=1.0, anchor="se", x=-15, y=-15)
+
+
+
 status_var = tk.StringVar()
-status_label = tk.Label(root, textvariable=status_var, anchor="e", fg="green")
-status_label.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=5)
+status_label = tk.Label(right_panel, textvariable=status_var, fg="green")
+status_label.pack(anchor="e")
+
+btn_abrir = tk.Button(right_panel, text="Abrir carpeta AAA", command=abrir_carpeta_aaa)
+btn_abrir.pack(anchor="e", pady=3)
 
 root.bind("s", guardar_recorte)
 root.bind("S", guardar_recorte)
