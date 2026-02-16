@@ -2,7 +2,6 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk, ImageDraw
-import subprocess
 
 # ==============================
 # CONFIGURACIÓN
@@ -48,13 +47,9 @@ def seleccionar_carpeta():
     if not carpeta_madre:
         return
 
-    # Reiniciar contador
     contador_guardado = 1
-
-    # Nueva carpeta AAA
     carpeta_destino_actual = os.path.join(carpeta_madre, "AAA")
 
-    # Limpiar status
     status_var.set("")
 
     list_sub.delete(0, tk.END)
@@ -77,10 +72,7 @@ def abrir_carpeta_aaa():
         return
 
     os.makedirs(carpeta_destino_actual, exist_ok=True)
-
-    # Abrir exactamente la carpeta donde se guardan los recortes
     os.startfile(carpeta_destino_actual)
-
 
 # ==============================
 # CARGAR SUBCARPETA
@@ -126,9 +118,7 @@ def cargar_subcarpeta(event):
 
             try:
                 with Image.open(ruta) as img:
-                    img.draft("RGB", (THUMB_SIZE, THUMB_SIZE))
                     img.thumbnail((THUMB_SIZE, THUMB_SIZE), Image.BILINEAR)
-
                     mini = ImageTk.PhotoImage(img)
                     miniaturas.append(mini)
 
@@ -177,7 +167,7 @@ def cargar_imagen_directa(ruta):
     renderizar()
 
 # ==============================
-# RENDERIZAR
+# RENDERIZAR (SIN OSCURECIMIENTO)
 # ==============================
 
 def renderizar():
@@ -196,18 +186,6 @@ def renderizar():
     crop_y_disp = int(crop_y / escala_y)
     crop_w_disp = int(crop_w / escala_x)
     crop_h_disp = int(crop_h / escala_y)
-
-    overlay = Image.new("RGBA", img_display.size, (0, 0, 0, 120))
-    img_display = img_display.convert("RGBA")
-    img_display = Image.alpha_composite(img_display, overlay)
-
-    zona = img_display.crop((
-        crop_x_disp,
-        crop_y_disp,
-        crop_x_disp + crop_w_disp,
-        crop_y_disp + crop_h_disp
-    ))
-    img_display.paste(zona, (crop_x_disp, crop_y_disp))
 
     draw = ImageDraw.Draw(img_display)
     draw.rectangle(
@@ -333,8 +311,6 @@ canvas.bind("<B1-Motion>", arrastrar)
 
 right_panel = tk.Frame(root)
 right_panel.place(relx=1.0, rely=1.0, anchor="se", x=-15, y=-15)
-
-
 
 status_var = tk.StringVar()
 status_label = tk.Label(right_panel, textvariable=status_var, fg="green")
