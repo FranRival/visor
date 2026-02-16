@@ -36,7 +36,10 @@ crop_h = 0
 
 dragging = False
 notificacion_id = None
+
 nombre_carpeta_var = tk.StringVar(value="")
+total_recortes_var = tk.StringVar(value="Recortes: 0")
+
 
 
 
@@ -52,6 +55,7 @@ def seleccionar_carpeta():
         return
 
     contador_guardado = 1
+    total_recortes_var.set("Recortes: 0")
     carpeta_destino_actual = os.path.join(carpeta_madre, "AAA")
     nombre_carpeta_var.set(os.path.basename(carpeta_madre))
 
@@ -307,6 +311,13 @@ def guardar_recorte(event=None):
 
     contador_guardado += 1
 
+    total_actual = int(total_recortes_var.get().split(": ")[1])
+    total_actual += 1
+    total_recortes_var.set(f"Recortes: {total_actual}")
+
+
+    
+
 # ==============================
 # DRAG
 # ==============================
@@ -358,6 +369,8 @@ label_nombre_carpeta = tk.Label(
     font=("Arial", 10, "bold")
 )
 label_nombre_carpeta.pack(side=tk.LEFT, padx=10)
+
+
 
 
 
@@ -423,6 +436,21 @@ canvas_preview.bind("<Leave>", unbind_scroll)
 
 canvas = tk.Canvas(root, width=800, height=500, bg="gray")
 canvas.pack(side=tk.RIGHT, expand=True)
+
+# ==============================
+# CONTADOR CENTRADO SOBRE VISOR
+# ==============================
+
+label_total_canvas = tk.Label(
+    canvas,
+    textvariable=total_recortes_var,
+    font=("Arial", 14),
+    bg="lightgray",
+    fg="black"
+)
+
+label_total_canvas.place(relx=0.66, y=5, anchor="n")
+
 
 canvas.bind("<ButtonPress-1>", iniciar_arrastre)
 canvas.bind("<ButtonRelease-1>", detener_arrastre)
