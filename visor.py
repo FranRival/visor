@@ -36,6 +36,8 @@ crop_h = 0
 
 dragging = False
 notificacion_id = None
+nombre_carpeta_var = tk.StringVar(value="")
+
 
 
 # ==============================
@@ -51,6 +53,8 @@ def seleccionar_carpeta():
 
     contador_guardado = 1
     carpeta_destino_actual = os.path.join(carpeta_madre, "AAA")
+    nombre_carpeta_var.set(os.path.basename(carpeta_madre))
+
 
     status_var.set("")
 
@@ -64,6 +68,7 @@ def seleccionar_carpeta():
             list_sub.insert(tk.END, item)
 
             contador_carpetas_var.set(f"Carpetas: {len(subcarpetas)}")
+
 
 # ==============================
 # ABRIR CARPETA AAA
@@ -346,6 +351,15 @@ contador_carpetas_var = tk.StringVar(value="Carpetas: 0")
 label_contador = tk.Label(top_container, textvariable=contador_carpetas_var)
 label_contador.pack(side=tk.LEFT, padx=10)
 
+label_nombre_carpeta = tk.Label(
+    top_container,
+    textvariable=nombre_carpeta_var,
+    fg="black",
+    font=("Arial", 10, "bold")
+)
+label_nombre_carpeta.pack(side=tk.LEFT, padx=10)
+
+
 
 # Contenedor para lista + scrollbar
 list_container = tk.Frame(frame_izq)
@@ -433,7 +447,7 @@ bottom_row.pack(anchor="e")
 link_copiar = tk.Label(
     bottom_row,
     text="Copiar ruta",
-    fg="cyan",
+    fg="black",
     cursor="hand2"
 )
 link_copiar.pack(side=tk.LEFT, padx=(0, 15))
