@@ -35,6 +35,8 @@ crop_w = 0
 crop_h = 0
 
 dragging = False
+notificacion_id = None
+
 
 # ==============================
 # SELECCIONAR CARPETA MADRE
@@ -204,14 +206,66 @@ def renderizar():
     canvas.delete("all")
     canvas.create_image(400, 250, anchor=tk.CENTER, image=imagen_actual)
 
+
+
+
+# ==============================
+# NOTIFICACIÓN EN VISOR
+# ==============================
+
+def mostrar_notificacion(texto, color="green"):
+    global notificacion_id
+
+    # Borrar anterior si existe
+    if notificacion_id:
+        canvas.delete(notificacion_id)
+
+    # Crear texto centrado
+    notificacion_id = canvas.create_text(
+        400,
+        40,
+        text=texto,
+        fill=color,
+        font=("Arial", 24, "bold")
+    )
+
+    # Fondo semitransparente simulado
+    bbox = canvas.bbox(notificacion_id)
+    rect = canvas.create_rectangle(
+        bbox[0] - 20,
+        bbox[1] - 10,
+        bbox[2] + 20,
+        bbox[3] + 10,
+        fill="black",
+        outline=""
+    )
+
+    canvas.tag_lower(rect, notificacion_id)
+
+    # Auto eliminar después de 1.5 segundos
+    def borrar():
+        canvas.delete(notificacion_id)
+        canvas.delete(rect)
+
+    root.after(1500, borrar)
+
+
+
+
 # ==============================
 # GUARDAR RECORTE
 # ==============================
 
+
 def guardar_recorte(event=None):
     global contador_guardado
 
-    if imagen_original is None or not carpeta_destino_actual:
+    if imagen_original is None:
+        mostrar_notificacion("No hay imagen cargada", "red")
+        return
+
+    if not carpeta_destino_actual:
+        mostrar_notificacion("No hay carpeta seleccionada", "red")
         return
 
     os.makedirs(carpeta_destino_actual, exist_ok=True)
@@ -226,7 +280,11 @@ def guardar_recorte(event=None):
 
     status_var.set(f"{contador_guardado}.jpg - guardada")
 
+    mostrar_notificacion(f"{contador_guardado}.jpg guardada", "lime")
+
     contador_guardado += 1
+
+
 
 # ==============================
 # DRAG
