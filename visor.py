@@ -79,6 +79,26 @@ def abrir_carpeta_aaa():
     os.startfile(carpeta_destino_actual)
 
 # ==============================
+# COPIAR RUTA AAA
+# ==============================
+
+def copiar_ruta_aaa(event=None):
+    global carpeta_destino_actual
+
+    if not carpeta_destino_actual:
+        mostrar_notificacion("No hay carpeta seleccionada", "red")
+        return
+
+    os.makedirs(carpeta_destino_actual, exist_ok=True)
+
+    root.clipboard_clear()
+    root.clipboard_append(carpeta_destino_actual)
+    root.update()
+
+    mostrar_notificacion("Ruta copiada", "cyan")
+
+
+# ==============================
 # CARGAR SUBCARPETA
 # ==============================
 
@@ -394,6 +414,7 @@ canvas.bind("<ButtonPress-1>", iniciar_arrastre)
 canvas.bind("<ButtonRelease-1>", detener_arrastre)
 canvas.bind("<B1-Motion>", arrastrar)
 
+
 # ==============================
 # PANEL INFERIOR DERECHO
 # ==============================
@@ -405,8 +426,26 @@ status_var = tk.StringVar()
 status_label = tk.Label(right_panel, textvariable=status_var, fg="green")
 status_label.pack(anchor="e")
 
-btn_abrir = tk.Button(right_panel, text="Abrir carpeta AAA", command=abrir_carpeta_aaa)
-btn_abrir.pack(anchor="e", pady=3)
+bottom_row = tk.Frame(right_panel)
+bottom_row.pack(anchor="e")
+
+# Texto estilo link
+link_copiar = tk.Label(
+    bottom_row,
+    text="Copiar ruta",
+    fg="cyan",
+    cursor="hand2"
+)
+link_copiar.pack(side=tk.LEFT, padx=(0, 15))
+link_copiar.bind("<Button-1>", copiar_ruta_aaa)
+
+btn_abrir = tk.Button(
+    bottom_row,
+    text="Abrir carpeta AAA",
+    command=abrir_carpeta_aaa
+)
+btn_abrir.pack(side=tk.LEFT)
+
 
 root.bind("s", guardar_recorte)
 root.bind("S", guardar_recorte)
