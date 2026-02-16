@@ -321,9 +321,21 @@ frame_izq.pack_propagate(False)
 btn = tk.Button(frame_izq, text="Seleccionar Carpeta", command=seleccionar_carpeta)
 btn.pack(pady=5)
 
-list_sub = tk.Listbox(frame_izq, width=30, height=8)
-list_sub.pack(padx=5, pady=5, fill=tk.X)
+# Contenedor para lista + scrollbar
+list_container = tk.Frame(frame_izq)
+list_container.pack(padx=5, pady=5, fill=tk.X)
+
+list_sub = tk.Listbox(list_container, width=30, height=8)
+scroll_sub = tk.Scrollbar(list_container, orient="vertical", command=list_sub.yview)
+
+list_sub.configure(yscrollcommand=scroll_sub.set)
+
+list_sub.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+scroll_sub.pack(side=tk.RIGHT, fill=tk.Y)
+
 list_sub.bind("<<ListboxSelect>>", cargar_subcarpeta)
+
+
 
 preview_container = tk.Frame(frame_izq)
 preview_container.pack(fill=tk.BOTH, expand=True)
