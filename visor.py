@@ -318,8 +318,18 @@ frame_izq = tk.Frame(root, width=350)
 frame_izq.pack(side=tk.LEFT, fill=tk.Y)
 frame_izq.pack_propagate(False)
 
-btn = tk.Button(frame_izq, text="Seleccionar Carpeta", command=seleccionar_carpeta)
-btn.pack(pady=5)
+
+# Contenedor botón + contador
+top_container = tk.Frame(frame_izq)
+top_container.pack(pady=5, fill=tk.X)
+
+btn = tk.Button(top_container, text="Seleccionar Carpeta", command=seleccionar_carpeta)
+btn.pack(side=tk.LEFT)
+
+contador_carpetas_var = tk.StringVar(value="Carpetas: 0")
+label_contador = tk.Label(top_container, textvariable=contador_carpetas_var)
+label_contador.pack(side=tk.LEFT, padx=10)
+
 
 # Contenedor para lista + scrollbar
 list_container = tk.Frame(frame_izq)
