@@ -63,6 +63,8 @@ def seleccionar_carpeta():
             subcarpetas.append(ruta)
             list_sub.insert(tk.END, item)
 
+            contador_carpetas_var.set(f"Carpetas: {len(subcarpetas)}")
+
 # ==============================
 # ABRIR CARPETA AAA
 # ==============================
@@ -207,8 +209,6 @@ def renderizar():
     canvas.create_image(400, 250, anchor=tk.CENTER, image=imagen_actual)
 
 
-
-
 # ==============================
 # NOTIFICACIÓN EN VISOR
 # ==============================
@@ -250,8 +250,6 @@ def mostrar_notificacion(texto, color="green"):
     root.after(1500, borrar)
 
 
-
-
 # ==============================
 # GUARDAR RECORTE
 # ==============================
@@ -283,8 +281,6 @@ def guardar_recorte(event=None):
     mostrar_notificacion(f"{contador_guardado}.jpg guardada", "lime")
 
     contador_guardado += 1
-
-
 
 # ==============================
 # DRAG
@@ -345,8 +341,6 @@ scroll_sub.pack(side=tk.RIGHT, fill=tk.Y)
 
 list_sub.bind("<<ListboxSelect>>", cargar_subcarpeta)
 
-
-
 preview_container = tk.Frame(frame_izq)
 preview_container.pack(fill=tk.BOTH, expand=True)
 
@@ -389,8 +383,6 @@ def bind_scroll_listbox(event):
 
 def unbind_scroll_listbox(event):
     list_sub.unbind_all("<MouseWheel>")
-
-
 
 canvas_preview.bind("<Enter>", bind_scroll)
 canvas_preview.bind("<Leave>", unbind_scroll)
