@@ -365,6 +365,23 @@ def bind_scroll(event):
 def unbind_scroll(event):
     canvas_preview.unbind_all("<MouseWheel>")
 
+
+# ==============================
+# SCROLL SUAVE PARA LISTBOX
+# ==============================
+
+def _on_mousewheel_listbox(event):
+    # desplazamiento más suave (mitad de velocidad normal)
+    list_sub.yview_scroll(int(-1 * (event.delta / 240)), "units")
+
+def bind_scroll_listbox(event):
+    list_sub.bind_all("<MouseWheel>", _on_mousewheel_listbox)
+
+def unbind_scroll_listbox(event):
+    list_sub.unbind_all("<MouseWheel>")
+
+
+
 canvas_preview.bind("<Enter>", bind_scroll)
 canvas_preview.bind("<Leave>", unbind_scroll)
 
