@@ -1,9 +1,8 @@
 import os
 import tkinter as tk
 from tkinter import filedialog
-from PIL import Image, ImageTk, ImageDraw
 from tkinter import simpledialog, messagebox
-import re
+from PIL import Image, ImageTk, ImageDraw
 
 # ==============================
 # CONFIGURACIÓN
@@ -176,6 +175,84 @@ def cargar_subcarpeta(event):
         root.after(10, lambda: cargar_lote(index))
 
     cargar_lote()
+
+
+# ==============================
+# RENOMBRAR CARPETA (CLICK DERECHO)
+# ==============================
+
+def menu_click_derecho(event):
+    try:
+        index = list_sub.nearest(event.y)
+        list_sub.selection_clear(0, tk.END)
+        list_sub.selection_set(index)
+        list_sub.activate(index)
+        menu_carpetas.post(event.x_root, event.y_root)
+    except:
+        pass
+
+
+def cambiar_nombre_carpeta():
+    if not list_sub.curselection():
+        return
+
+    index = list_sub.curselection()[0]
+    ruta_actual = subcarpetas[index]
+    nombre_actual = os.path.basename(ruta_actual)
+
+    nuevo_nombre = simpledialog.askstring(
+        "Cambiar nombre",
+        "Nuevo nombre de carpeta:",
+        initialvalue=nombre_actual
+    )
+
+    if nuevo_nombre is None:
+        return  # Cancelado
+
+    nuevo_nombre = nuevo_nombre.strip()
+
+    # Validaciones
+    if not nuevo_nombre:
+        messagebox.showerror("Error", "El nombre no puede estar vacío.")
+        return
+
+    caracteres_invalidos = r'\/:*?"<>|'
+    if any(c in nuevo_nombre for c in caracteres_invalidos):
+        messagebox.showerror("Error", "El nombre contiene caracteres inválidos.")
+        return
+
+    nueva_ruta = os.path.join(carpeta_madre, nuevo_nombre)
+
+    if os.path.exists(nueva_ruta):
+        messagebox.showerror("Error", "Ya existe una carpeta con ese nombre.")
+        return
+
+    try:
+        os.rename(ruta_actual, nueva_ruta)
+
+        # Actualizar lista interna
+        subcarpetas[index] = nueva_ruta
+
+        # Actualizar Listbox
+        list_sub.delete(index)
+        list_sub.insert(index, nuevo_nombre)
+
+    except Exception as e:
+        messagebox.showerror("Error", f"No se pudo renombrar.\n{e}")
+
+# ==============================
+# ABRIR CARPETA
+# ==============================
+
+def abrir_carpeta_seleccionada():
+    if not list_sub.curselection():
+        return
+
+    index = list_sub.curselection()[0]
+    ruta = subcarpetas[index]
+
+    if os.path.exists(ruta):
+        os.startfile(ruta)
 
 # ==============================
 # CARGAR IMAGEN GRANDE
@@ -355,7 +432,7 @@ frame_izq.pack_propagate(False)
 
 # Contenedor botón + contador
 top_container = tk.Frame(frame_izq)
-top_container.pack(pady=5, fill=tk.BOTH)
+top_container.pack(pady=5, fill=tk.X)
 
 btn = tk.Button(top_container, text="Seleccionar Carpeta", command=seleccionar_carpeta)
 btn.pack(side=tk.LEFT)
@@ -389,8 +466,6 @@ list_sub.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 scroll_sub.pack(side=tk.RIGHT, fill=tk.Y)
 
 list_sub.bind("<<ListboxSelect>>", cargar_subcarpeta)
-
-list_sub.bind("<Button-3>", mostrar_menu_contextual)
 
 preview_container = tk.Frame(frame_izq)
 preview_container.pack(fill=tk.BOTH, expand=True)
@@ -442,84 +517,29 @@ canvas = tk.Canvas(root, width=800, height=500, bg="gray")
 canvas.pack(side=tk.RIGHT, expand=True)
 
 # ==============================
-# EDICION DE NOMBRE DE CARPETAS
+# MENU CONTEXTUAL LISTBOX
 # ==============================
 
+menu_carpetas = tk.Menu(root, tearoff=0)
 
-def renombrar_subcarpeta(event=None):
-    try:
-        selection = list_sub.curselection()
-        if not selection:
-            return
+menu_carpetas.add_command(
+    label="Abrir carpeta",
+    command=abrir_carpeta_seleccionada
+)
 
-        index = selection[0]
+menu_carpetas.add_separator()
 
-        ruta_actual = subcarpetas[index]
-        nombre_actual = os.path.basename(ruta_actual)
+menu_carpetas.add_command(
+    label="Cambiar nombre",
+    command=cambiar_nombre_carpeta
+)
 
-        nuevo_nombre = simpledialog.askstring(
-            "Cambiar nombre",
-            f"Nuevo nombre para '{nombre_actual}':"
-        )
-
-        if nuevo_nombre is None:
-            return  # Canceló
-
-        nuevo_nombre = nuevo_nombre.strip()
-
-        # Validación vacío
-        if not nuevo_nombre:
-            messagebox.showerror("Error", "El nombre no puede estar vacío.")
-            return
-
-        # Validar caracteres inválidos Windows
-        if re.search(r'[\\/:*?"<>|]', nuevo_nombre):
-            messagebox.showerror(
-                "Error",
-                "El nombre contiene caracteres inválidos:\n\\ / : * ? \" < > |"
-            )
-            return
-
-        # Validar duplicado
-        nombres_existentes = [os.path.basename(r) for r in subcarpetas]
-        if nuevo_nombre in nombres_existentes:
-            messagebox.showerror("Error", "Ya existe una carpeta con ese nombre.")
-            return
-
-        ruta_nueva = os.path.join(carpeta_madre, nuevo_nombre)
-
-        os.rename(ruta_actual, ruta_nueva)
-
-        # ---- REFRESCAR LISTA MANUALMENTE ----
-        seleccionar_carpeta()
-
-        # Reseleccionar nueva carpeta
-        for i, r in enumerate(subcarpetas):
-            if os.path.basename(r) == nuevo_nombre:
-                list_sub.selection_set(i)
-                list_sub.activate(i)
-                break
-
-    except Exception as e:
-        messagebox.showerror("Error", f"No se pudo renombrar:\n{e}")
+list_sub.bind("<Button-3>", menu_click_derecho)
 
 
 # ==============================
 # CONTADOR CENTRADO SOBRE VISOR
 # ==============================
-
-
-def mostrar_menu_contextual(event):
-    try:
-        index = list_sub.nearest(event.y)
-        list_sub.selection_clear(0, tk.END)
-        list_sub.selection_set(index)
-        list_sub.activate(index)
-        menu_contextual.post(event.x_root, event.y_root)
-    except:
-        pass
-
-
 
 label_total_canvas = tk.Label(
     canvas,
@@ -567,10 +587,6 @@ btn_abrir = tk.Button(
     command=abrir_carpeta_aaa
 )
 btn_abrir.pack(side=tk.LEFT)
-
-
-menu_contextual = tk.Menu(root, tearoff=0)
-menu_contextual.add_command(label="Cambiar nombre", command=renombrar_subcarpeta)
 
 
 root.bind("s", guardar_recorte)
