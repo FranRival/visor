@@ -355,7 +355,7 @@ frame_izq.pack_propagate(False)
 
 # Contenedor botón + contador
 top_container = tk.Frame(frame_izq)
-top_container.pack(pady=5, fill=tk.X)
+top_container.pack(pady=5, fill=tk.BOTH)
 
 btn = tk.Button(top_container, text="Seleccionar Carpeta", command=seleccionar_carpeta)
 btn.pack(side=tk.LEFT)
@@ -389,6 +389,8 @@ list_sub.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 scroll_sub.pack(side=tk.RIGHT, fill=tk.Y)
 
 list_sub.bind("<<ListboxSelect>>", cargar_subcarpeta)
+
+list_sub.bind("<Button-3>", mostrar_menu_contextual)
 
 preview_container = tk.Frame(frame_izq)
 preview_container.pack(fill=tk.BOTH, expand=True)
