@@ -70,7 +70,9 @@ def seleccionar_carpeta():
         ruta = os.path.join(carpeta_madre, item)
         if os.path.isdir(ruta):
             subcarpetas.append(ruta)
-            list_sub.insert(tk.END, item)
+
+            numero = len(subcarpetas)
+            list_sub.insert(tk.END, f"{numero}. {item}")
 
             contador_carpetas_var.set(f"Carpetas: {len(subcarpetas)}")
 
@@ -235,7 +237,7 @@ def cambiar_nombre_carpeta():
 
         # Actualizar Listbox
         list_sub.delete(index)
-        list_sub.insert(index, nuevo_nombre)
+        list_sub.insert(index, f"{index+1}. {nuevo_nombre}")
 
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo renombrar.\n{e}")
