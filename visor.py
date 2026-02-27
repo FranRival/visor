@@ -40,9 +40,7 @@ notificacion_id = None
 
 nombre_carpeta_var = tk.StringVar(value="")
 total_recortes_var = tk.StringVar(value="Recortes: 0")
-
-
-
+match_var = tk.StringVar(value="Esperando...")
 
 # ==============================
 # SELECCIONAR CARPETA MADRE
@@ -390,6 +388,8 @@ def guardar_recorte(event=None):
 
     mostrar_notificacion(f"{contador_guardado}.jpg guardada", "lime")
 
+    validar_match(contador_guardado)
+
     contador_guardado += 1
 
     total_actual = int(total_recortes_var.get().split(": ")[1])
@@ -423,6 +423,27 @@ def arrastrar(event):
     crop_y = max(0, min(nuevo_y, imagen_original.height - crop_h))
     renderizar()
 
+
+
+# ==============================
+# VALIDAR MATCH
+# ==============================
+
+def validar_match(numero_guardado):
+    if not list_sub.curselection():
+        match_var.set("NO MATCH")
+        match_label.config(fg="red")
+        return
+
+    indice = list_sub.curselection()[0]
+    numero_carpeta = indice + 1
+
+    if numero_guardado == numero_carpeta:
+        match_var.set("MATCH")
+        match_label.config(fg="lime")
+    else:
+        match_var.set("NO MATCH")
+        match_label.config(fg="red")
 # ==============================
 # INTERFAZ
 # ==============================
@@ -517,6 +538,24 @@ canvas_preview.bind("<Leave>", unbind_scroll)
 
 canvas = tk.Canvas(root, width=800, height=500, bg="gray")
 canvas.pack(side=tk.RIGHT, expand=True)
+
+# ==============================
+# MINI PANEL MATCH (lado derecho del visor)
+# ==============================
+
+match_frame = tk.Frame(root, bg="black", width=180, height=80)
+match_frame.place(x=1030, y=120)  # ajusta si quieres moverlo
+
+match_label = tk.Label(
+    match_frame,
+    textvariable=match_var,
+    font=("Arial", 18, "bold"),
+    bg="black",
+    fg="yellow"
+)
+
+match_label.place(relx=0.5, rely=0.5, anchor="center")
+
 
 # ==============================
 # MENU CONTEXTUAL LISTBOX
