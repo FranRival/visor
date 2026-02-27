@@ -41,6 +41,7 @@ notificacion_id = None
 nombre_carpeta_var = tk.StringVar(value="")
 total_recortes_var = tk.StringVar(value="Recortes: 0")
 match_var = tk.StringVar(value="Esperando...")
+status_var = tk.StringVar()
 
 # ==============================
 # SELECCIONAR CARPETA MADRE
@@ -536,15 +537,25 @@ def unbind_scroll_listbox(event):
 canvas_preview.bind("<Enter>", bind_scroll)
 canvas_preview.bind("<Leave>", unbind_scroll)
 
-canvas = tk.Canvas(root, width=800, height=500, bg="gray")
-canvas.pack(side=tk.RIGHT, expand=True)
-
 # ==============================
-# MINI PANEL MATCH (lado derecho del visor)
+# CONTENEDOR DERECHO (visor + match)
 # ==============================
 
-match_frame = tk.Frame(root, bg="black", width=180, height=80)
-match_frame.place(x=1030, y=120)  # ajusta si quieres moverlo
+frame_derecho = tk.Frame(root)
+frame_derecho.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+canvas = tk.Canvas(frame_derecho, width=800, height=500, bg="gray")
+canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+
+# ==============================
+# PANEL MATCH INCRUSTADO - REDUCIDO
+# ==============================
+
+match_frame = tk.Frame(frame_derecho, bg="black", width=180, height=350)
+match_frame.pack(side=tk.LEFT, padx=10, pady=100)
+match_frame.pack_propagate(False)
+
 
 match_label = tk.Label(
     match_frame,
@@ -554,7 +565,32 @@ match_label = tk.Label(
     fg="yellow"
 )
 
-match_label.place(relx=0.5, rely=0.5, anchor="center")
+# Texto MATCH
+match_label.place(relx=0.5, rely=0.2, anchor="n")
+
+# ==============================
+# BOTONES DENTRO DEL PANEL
+# ==============================
+
+botones_frame = tk.Frame(match_frame, bg="black")
+botones_frame.place(relx=0.5, rely=0.8, anchor="s")
+
+link_copiar = tk.Label(
+    botones_frame,
+    text="Copiar ruta",
+    fg="white",
+    bg="black",
+    cursor="hand2"
+)
+link_copiar.pack(pady=5)
+link_copiar.bind("<Button-1>", copiar_ruta_aaa)
+
+btn_abrir = tk.Button(
+    botones_frame,
+    text="Abrir carpeta AAA",
+    command=abrir_carpeta_aaa
+)
+btn_abrir.pack(pady=5)
 
 
 # ==============================
@@ -596,38 +632,6 @@ label_total_canvas.place(relx=0.66, y=5, anchor="n")
 canvas.bind("<ButtonPress-1>", iniciar_arrastre)
 canvas.bind("<ButtonRelease-1>", detener_arrastre)
 canvas.bind("<B1-Motion>", arrastrar)
-
-
-# ==============================
-# PANEL INFERIOR DERECHO
-# ==============================
-
-right_panel = tk.Frame(root)
-right_panel.place(relx=1.0, rely=1.0, anchor="se", x=-15, y=-15)
-
-status_var = tk.StringVar()
-status_label = tk.Label(right_panel, textvariable=status_var, fg="green")
-status_label.pack(anchor="e")
-
-bottom_row = tk.Frame(right_panel)
-bottom_row.pack(anchor="e")
-
-# Texto estilo link
-link_copiar = tk.Label(
-    bottom_row,
-    text="Copiar ruta",
-    fg="black",
-    cursor="hand2"
-)
-link_copiar.pack(side=tk.LEFT, padx=(0, 15))
-link_copiar.bind("<Button-1>", copiar_ruta_aaa)
-
-btn_abrir = tk.Button(
-    bottom_row,
-    text="Abrir carpeta AAA",
-    command=abrir_carpeta_aaa
-)
-btn_abrir.pack(side=tk.LEFT)
 
 
 root.bind("s", guardar_recorte)
