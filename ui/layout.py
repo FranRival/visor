@@ -74,7 +74,7 @@ class Layout:
         # Dividimos horizontalmente
         self.canvas = tk.Canvas(
             self.frame_derecho,
-            bg="black"
+            bg="gray"
         )
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -94,5 +94,23 @@ class Layout:
             fg="yellow"
         )
         self.match_label.pack(pady=20)
-        
+
+        # Espaciador
+        self.spacer = tk.Frame(self.match_frame, bg="black")
+        self.spacer.pack(expand=True)
+
+        # Botón copiar ruta
+        self.btn_copy = tk.Button(
+            self.match_frame,
+            text="Copiar ruta"
+        )
+        self.btn_copy.pack(pady=5, padx=10, fill=tk.X)
+
+        # Botón abrir carpeta AAA
+        self.btn_open = tk.Button(
+            self.match_frame,
+            text="Abrir carpeta AAA"
+        )
+        self.btn_open.pack(pady=5, padx=10, fill=tk.X)
+                
         
