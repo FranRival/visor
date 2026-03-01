@@ -1,3 +1,74 @@
+### Modularizacion 1/3/26
+
+#### ✅ Fase 1 — Modularización
+
+- Separar core / ui / state / config.
+
+#### ✅ Fase 2 — Corrección de imports
+
+- Arreglar estructura de módulos y ejecución.
+
+#### ✅ Fase 3 — Reconstrucción del layout
+
+- Eliminar duplicaciones, estabilizar canvas y panel.
+
+#### ✅ Fase 4 — Reconectar controles
+
+- Botones, guardado, notificaciones, panel MATCH.
+
+### Siguientes Fases
+
+#### 🔶 Fase 5 — Estabilidad profesional
+
+- Objetivo: que no se rompa nunca.
+- Manejo robusto de errores al cargar imagen
+- Validación si carpeta no tiene imágenes
+- Protección contra doble guardado
+- Protección contra estado vacío
+- Logging interno (archivo .log)
+- Esto es “modo herramienta confiable”.
+
+#### 🔶 Fase 6 — Rendimiento
+
+- Aquí entramos en lo que tú realmente querías mejorar:
+- Optimizar render del canvas
+- Evitar recalcular thumbnails innecesarios
+- Cargar imágenes lazy
+- Cachear imágenes en memoria
+- Evitar freeze cuando hay muchas imágenes
+- Esto convierte el visor en algo rápido de verdad.
+
+#### 🔶 Fase 7 — UX avanzada
+
+- Zoom con rueda
+- Arrastrar imagen
+- Crop con proporción fija opcional
+- Mostrar dimensiones del crop
+- Historial de crops
+- Atajos de teclado configurables
+- Esto lo vuelve herramienta seria.
+
+#### 🔶 Fase 8 — Arquitectura 2.0
+
+- Aquí es donde se vuelve profesional de verdad:
+- Separar completamente lógica UI de lógica de imagen
+- EventBus interno
+- Sistema de plugins
+- Tests automáticos
+- Build como .exe limpio
+- Esto es cuando deja de ser MVP y se vuelve producto.
+
+#### 🔶 Fase 9 — Monetización / Producto
+
+- Aquí entramos en visión estratégica (lo que realmente importa):
+- Versión gratuita limitada
+- Versión Pro con funciones extra
+- Marca propia
+- Página web de descarga
+- Telemetría opcional
+- Licenciamiento
+
+
 ---
 
 ### 1️⃣ Problema que Resuelve
@@ -19,7 +90,7 @@ Este flujo toma entre **15 y 25 segundos por imagen**.
 
 #### Escenarios reales
 
-- 500 imágenes ≈ 2–3 horas  
+- 500 imágenes = 2–3 horas  
 - 100 carpetas madre = días completos de trabajo repetitivo  
 
 El problema no es técnico, es de flujo ineficiente.
