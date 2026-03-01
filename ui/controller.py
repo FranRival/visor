@@ -1,4 +1,6 @@
 import os
+import os
+import tkinter as tk
 
 
 class Controller:
@@ -26,6 +28,9 @@ class Controller:
     def bind(self):
         self.layout.btn_select.config(command=self.seleccionar_carpeta)
         self.layout.list_sub.bind("<<ListboxSelect>>", self.cargar_subcarpeta)
+
+        self.layout.btn_copy.config(command=self.copiar_ruta)
+        self.layout.btn_open.config(command=self.abrir_carpeta_aaa)
 
         self.layout.canvas.bind("<ButtonPress-1>", self.iniciar_arrastre)
         self.layout.canvas.bind("<ButtonRelease-1>", self.detener_arrastre)
@@ -110,6 +115,45 @@ class Controller:
             anchor="center",
             image=img
         )
+
+    
+
+    # ==========================
+    # COPIAR RUTA
+    # ==========================
+
+    def copiar_ruta(self):
+
+        if not self.state.carpeta_madre:
+            self.notifier.mostrar("No hay carpeta seleccionada", "red")
+            return
+
+        carpeta = os.path.join(self.state.carpeta_madre, "AAA")
+
+        self.layout.root.clipboard_clear()
+        self.layout.root.clipboard_append(carpeta)
+        self.layout.root.update()
+
+        self.notifier.mostrar("Ruta copiada al portapapeles", "green")
+
+
+    # ==========================
+    # ABRIR CARPETA AAA
+    # ==========================
+
+    def abrir_carpeta_aaa(self):
+
+        if not self.state.carpeta_madre:
+            self.notifier.mostrar("No hay carpeta seleccionada", "red")
+            return
+
+        carpeta = os.path.join(self.state.carpeta_madre, "AAA")
+
+        if not os.path.exists(carpeta):
+            self.notifier.mostrar("La carpeta AAA no existe aún", "red")
+            return
+
+        os.startfile(carpeta)
 
     # ==========================
     # DRAG
