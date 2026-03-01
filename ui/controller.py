@@ -1,20 +1,25 @@
-import os
+class Controller:
 
-class EventController:
+    def __init__(self, state, layout, file_manager,
+                 image_manager, crop_engine,
+                 matcher, preview_panel,
+                 notifier):
 
-    def __init__(self, state, layout, file_manager, image_manager, crop_engine):
         self.state = state
         self.layout = layout
         self.file_manager = file_manager
         self.image_manager = image_manager
         self.crop_engine = crop_engine
+        self.matcher = matcher
+        self.preview_panel = preview_panel
+        self.notifier = notifier
 
-        self.bind_events()
+        self.bind()
 
-    def bind_events(self):
+    def bind(self):
         self.layout.btn_select.config(command=self.seleccionar_carpeta)
         self.layout.list_sub.bind("<<ListboxSelect>>", self.cargar_subcarpeta)
-        self.layout.root.bind("s", self.guardar_recorte)
+        self.layout.root.bind("s", self.guardar)
 
     def seleccionar_carpeta(self):
         carpeta = self.file_manager.seleccionar_carpeta()
@@ -27,6 +32,7 @@ class EventController:
         self.layout.list_sub.delete(0, "end")
 
         for i, ruta in enumerate(self.state.subcarpetas):
+            import os
             nombre = os.path.basename(ruta)
             self.layout.list_sub.insert("end", f"{i+1}. {nombre}")
 
@@ -37,16 +43,13 @@ class EventController:
         indice = self.layout.list_sub.curselection()[0]
         ruta = self.state.subcarpetas[indice]
 
-        archivos = [
-            f for f in os.listdir(ruta)
-            if f.lower().endswith((".jpg", ".jpeg", ".png"))
-        ]
+        self.preview_panel.cargar_subcarpeta(
+            ruta,
+            self.cargar_imagen
+        )
 
-        if not archivos:
-            return
-
-        imagen_path = os.path.join(ruta, archivos[0])
-        self.state.imagen_original = self.image_manager.cargar_imagen(imagen_path)
+    def cargar_imagen(self, ruta):
+        self.state.imagen_original = self.image_manager.cargar_imagen(ruta)
 
         cx, cy, cw, ch = self.crop_engine.calcular_crop_inicial(self.state.imagen_original)
 
@@ -70,10 +73,12 @@ class EventController:
         self.layout.canvas.delete("all")
         self.layout.canvas.create_image(400, 250, anchor="center", image=img)
 
-    def guardar_recorte(self, event=None):
+    def guardar(self, event=None):
         if self.state.imagen_original is None:
+            self.notifier.mostrar("No hay imagen cargada", "red")
             return
 
+        import os
         carpeta = os.path.join(self.state.carpeta_madre, "AAA")
         self.file_manager.crear_carpeta(carpeta)
 
@@ -90,9 +95,11 @@ class EventController:
 
         indice = self.layout.list_sub.curselection()[0]
 
-        if self.crop_engine.validar_match(self.state.contador_guardado, indice):
+        if self.matcher.validar(self.state.contador_guardado, indice):
             self.layout.match_label.config(text="MATCH", fg="lime")
         else:
             self.layout.match_label.config(text="NO MATCH", fg="red")
+
+        self.notifier.mostrar(f"{self.state.contador_guardado}.jpg guardada", "cyan")
 
         self.state.contador_guardado += 1
