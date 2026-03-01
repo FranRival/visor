@@ -63,6 +63,7 @@ class Layout:
         self.canvas_preview.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.scrollbar_preview.pack(side=tk.RIGHT, fill=tk.Y)
 
+        
         # ========================
         # FRAME DERECHO
         # ========================
@@ -70,17 +71,28 @@ class Layout:
         self.frame_derecho = tk.Frame(self.root)
         self.frame_derecho.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+        # Dividimos horizontalmente
         self.canvas = tk.Canvas(
             self.frame_derecho,
-            width=800,
-            height=500,
-            bg="gray"
+            bg="black"
         )
-        self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.match_frame = tk.Frame(
+            self.frame_derecho,
+            bg="black",
+            width=180
+        )
+        self.match_frame.pack(side=tk.RIGHT, fill=tk.Y)
+        self.match_frame.pack_propagate(False)
 
         self.match_label = tk.Label(
-            self.frame_derecho,
+            self.match_frame,
             text="Esperando...",
-            font=("Arial", 18)
+            font=("Arial", 18, "bold"),
+            bg="black",
+            fg="yellow"
         )
-        self.match_label.pack(pady=10)
+        self.match_label.pack(pady=20)
+        
+        
