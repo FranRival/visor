@@ -1,9 +1,9 @@
 import os
+from tkinter import filedialog
 
 class FileManager:
 
     def seleccionar_carpeta(self):
-        from tkinter import filedialog
         return filedialog.askdirectory()
 
     def listar_subcarpetas(self, carpeta_madre):
@@ -22,3 +22,6 @@ class FileManager:
 
     def renombrar(self, origen, destino):
         os.rename(origen, destino)
+
+    def existe(self, ruta):
+        return os.path.exists(ruta)

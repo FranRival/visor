@@ -14,3 +14,7 @@ class CropEngine:
         crop_y = (alto - crop_h) // 2
 
         return crop_x, crop_y, crop_w, crop_h
+
+    def validar_match(self, numero_guardado, indice_listbox):
+        numero_carpeta = indice_listbox + 1
+        return numero_guardado == numero_carpeta
