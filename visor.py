@@ -544,6 +544,29 @@ canvas_preview.bind("<Leave>", unbind_scroll)
 frame_derecho = tk.Frame(root)
 frame_derecho.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+# ==============================
+# FOOTER INFERIOR DERECHO
+# ==============================
+
+footer_frame = tk.Frame(frame_derecho)
+footer_frame.pack(side=tk.BOTTOM, anchor="e", pady=10, padx=15)
+
+link_copiar = tk.Label(
+    footer_frame,
+    text="Copiar ruta",
+    fg="black",
+    cursor="hand2"
+)
+link_copiar.pack(side=tk.LEFT, padx=10)
+link_copiar.bind("<Button-1>", copiar_ruta_aaa)
+
+btn_abrir = tk.Button(
+    footer_frame,
+    text="Abrir carpeta AAA",
+    command=abrir_carpeta_aaa
+)
+btn_abrir.pack(side=tk.LEFT)
+
 canvas = tk.Canvas(frame_derecho, width=800, height=500, bg="gray")
 canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
@@ -567,30 +590,6 @@ match_label = tk.Label(
 
 # Texto MATCH
 match_label.place(relx=0.5, rely=0.2, anchor="n")
-
-# ==============================
-# BOTONES DENTRO DEL PANEL
-# ==============================
-
-botones_frame = tk.Frame(match_frame, bg="black")
-botones_frame.place(relx=0.5, rely=0.8, anchor="s")
-
-link_copiar = tk.Label(
-    botones_frame,
-    text="Copiar ruta",
-    fg="white",
-    bg="black",
-    cursor="hand2"
-)
-link_copiar.pack(pady=5)
-link_copiar.bind("<Button-1>", copiar_ruta_aaa)
-
-btn_abrir = tk.Button(
-    botones_frame,
-    text="Abrir carpeta AAA",
-    command=abrir_carpeta_aaa
-)
-btn_abrir.pack(pady=5)
 
 
 # ==============================
