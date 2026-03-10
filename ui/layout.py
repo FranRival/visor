@@ -53,6 +53,12 @@ class Layout:
         )
         self.btn_refresh.pack(side=tk.LEFT, padx=5)
 
+        self.btn_edit = tk.Button(
+            self.top_buttons,
+            text="Modo edición"
+        )
+        self.btn_edit.pack(side=tk.LEFT, padx=5)
+
         # etiqueta nombre carpeta
         self.label_carpeta = tk.Label(
             self.top_buttons,

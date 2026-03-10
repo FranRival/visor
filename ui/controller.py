@@ -40,6 +40,8 @@ class Controller:
 
         self.layout.root.bind("s", self.guardar)
 
+        self.layout.btn_edit.config(command=self.toggle_modo_edicion)
+
         # MENU CONTEXTUAL
         self.layout.menu_carpetas.entryconfig(
             "Abrir carpeta",
@@ -77,18 +79,58 @@ class Controller:
             self.layout.list_sub.insert("end", f"{i+1}. {nombre}")
 
 
+    # ==========================
+    # MODO EDICION
+    # ==========================
 
+    def toggle_modo_edicion(self):
+
+        self.state.modo_edicion = not self.state.modo_edicion
+
+        if self.state.modo_edicion:
+            self.layout.btn_edit.config(text="Salir edición")
+            self.notifier.mostrar("Modo edición activado", "cyan")
+        else:
+            self.layout.btn_edit.config(text="Modo edición")
+            self.state.checks_carpetas.clear()
+            self.notifier.mostrar("Modo edición desactivado", "cyan")
+
+        self.actualizar_lista_checks()
+
+
+
+    # ==========================
+    # mostrar checks
+    # ==========================
+    def actualizar_lista_checks(self):
+
+        self.layout.list_sub.delete(0, "end")
+
+        for i, ruta in enumerate(self.state.subcarpetas):
+
+            nombre = os.path.basename(ruta)
+
+            if self.state.modo_edicion:
+
+                if ruta in self.state.checks_carpetas:
+                    prefijo = "[✓]"
+                else:
+                    prefijo = "[ ]"
+
+                texto = f"{prefijo} {i+1}. {nombre}"
+
+            else:
+
+                texto = f"{i+1}. {nombre}"
+
+            self.layout.list_sub.insert("end", texto)
+   
     # ==========================
     # REFRESH SUBCARPETAS
     # ==========================
 
-    # ==========================
-    # REFRESH SUBCARPETAS
-    # ==========================
 
-    # ==========================
-    # REFRESH SUBCARPETAS
-    # ==========================
+
 
     def refresh_subcarpetas(self):
 
@@ -142,17 +184,35 @@ class Controller:
     # ==========================
 
     def cargar_subcarpeta(self, event):
+
         if not self.layout.list_sub.curselection():
             return
 
         indice = self.layout.list_sub.curselection()[0]
         ruta = self.state.subcarpetas[indice]
 
+        # ==========================
+        # MODO EDICION (CHECKS)
+        # ==========================
+
+        if self.state.modo_edicion:
+
+            if ruta in self.state.checks_carpetas:
+                self.state.checks_carpetas.remove(ruta)
+            else:
+                self.state.checks_carpetas.add(ruta)
+
+            self.actualizar_lista_checks()
+            return
+
+        # ==========================
+        # MODO NORMAL
+        # ==========================
+
         self.preview_panel.cargar_subcarpeta(
             ruta,
             self.cargar_imagen
         )
-
     # ==========================
     # CARGAR IMAGEN
     # ==========================

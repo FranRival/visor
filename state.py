@@ -19,3 +19,6 @@ class AppState:
 
         self.dragging = False
         self.notificacion_id = None
+
+        self.modo_edicion = False
+        self.checks_carpetas = set()
