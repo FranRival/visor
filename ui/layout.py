@@ -14,12 +14,26 @@ class Layout:
     def build(self):
 
         # ========================
+        # SPLIT PRINCIPAL
+        # ========================
+
+        self.main_split = tk.PanedWindow(
+            self.root,
+            orient=tk.HORIZONTAL,
+            sashwidth=6,
+            bg="#444"
+        )
+
+        self.main_split.pack(fill=tk.BOTH, expand=True)
+
+        # ========================
         # FRAME IZQUIERDO
         # ========================
 
-        self.frame_izq = tk.Frame(self.root, width=350)
-        self.frame_izq.pack(side=tk.LEFT, fill=tk.Y)
+        self.frame_izq = tk.Frame(self.main_split, width=350)
         self.frame_izq.pack_propagate(False)
+
+        self.main_split.add(self.frame_izq)
 
         
         # CONTENEDOR BOTONES SUPERIORES
@@ -38,15 +52,41 @@ class Layout:
         )
         self.btn_refresh.pack(side=tk.LEFT, padx=5)
 
-        self.list_sub = tk.Listbox(self.frame_izq, selectmode=tk.EXTENDED)
-        self.list_sub.pack(fill=tk.X, padx=5)
+        # ========================
+        # SPLIT VERTICAL IZQUIERDO
+        # ========================
+
+        self.left_split = tk.PanedWindow(
+            self.frame_izq,
+            orient=tk.VERTICAL,
+            sashwidth=6
+        )
+
+        self.left_split.pack(fill=tk.BOTH, expand=True, padx=5)
+
+        # ========================
+        # CONTENEDOR EXPLORADOR
+        # ========================
+
+        self.list_container = tk.Frame(self.left_split)
+
+        self.list_sub = tk.Listbox(
+            self.list_container,
+            selectmode=tk.EXTENDED
+        )
+
+        self.list_sub.pack(fill=tk.BOTH, expand=True)
+
+        self.left_split.add(self.list_container, height=150)
+
 
         # ========================
         # PREVIEW SCROLL
         # ========================
 
-        self.preview_container = tk.Frame(self.frame_izq)
-        self.preview_container.pack(fill=tk.BOTH, expand=True)
+        self.preview_container = tk.Frame(self.left_split)
+
+        self.left_split.add(self.preview_container)
 
         self.canvas_preview = tk.Canvas(self.preview_container)
         self.scrollbar_preview = tk.Scrollbar(
@@ -82,8 +122,8 @@ class Layout:
         # FRAME DERECHO
         # ========================
 
-        self.frame_derecho = tk.Frame(self.root)
-        self.frame_derecho.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.frame_derecho = tk.Frame(self.main_split)
+        self.main_split.add(self.frame_derecho)
 
         # Dividimos horizontalmente
         self.canvas = tk.Canvas(
