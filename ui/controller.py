@@ -82,20 +82,59 @@ class Controller:
     # REFRESH SUBCARPETAS
     # ==========================
 
+    # ==========================
+    # REFRESH SUBCARPETAS
+    # ==========================
+
+    # ==========================
+    # REFRESH SUBCARPETAS
+    # ==========================
+
     def refresh_subcarpetas(self):
 
         if not self.state.carpeta_madre:
             return
 
+        # guardar nombre de carpeta seleccionada
+        seleccion = self.layout.list_sub.curselection()
+
+        nombre_actual = None
+        if seleccion:
+            indice = seleccion[0]
+            ruta_actual = self.state.subcarpetas[indice]
+            nombre_actual = os.path.basename(ruta_actual)
+
         carpeta = self.state.carpeta_madre
 
+        # recargar subcarpetas
         self.state.subcarpetas = self.file_manager.listar_subcarpetas(carpeta)
 
+        # limpiar lista
         self.layout.list_sub.delete(0, "end")
 
+        nuevo_indice = None
+
         for i, ruta in enumerate(self.state.subcarpetas):
+
             nombre = os.path.basename(ruta)
+
             self.layout.list_sub.insert("end", f"{i+1}. {nombre}")
+
+            if nombre_actual and nombre == nombre_actual:
+                nuevo_indice = i
+
+        # restaurar selección
+        if nuevo_indice is not None:
+
+            self.layout.list_sub.selection_set(nuevo_indice)
+            self.layout.list_sub.activate(nuevo_indice)
+
+            ruta = self.state.subcarpetas[nuevo_indice]
+
+            self.preview_panel.cargar_subcarpeta(
+                ruta,
+                self.cargar_imagen
+            )
 
         self.notifier.mostrar("Lista actualizada", "green")
     # ==========================
@@ -471,5 +510,5 @@ class Controller:
         #1. En el panel del explorador necesitamos un modo de edicion. un check. ese check va a seleccionar varias carpetas y luego eliminar
         #2. en el boton de refresh, al dar click me reiniciar y me borra la ubicacion
         #3. 
-        #4. poder eliminar imagenes 
+        #4. 
         #5. 
