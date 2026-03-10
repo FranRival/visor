@@ -16,6 +16,37 @@ class PreviewPanel:
         self.canvas.bind("<Enter>", self._bind_mousewheel)
         self.canvas.bind("<Leave>", self._unbind_mousewheel)
 
+    # ==========================
+    # ELIMINAR IMAGEN
+    # ==========================
+
+    def eliminar_imagen(self, ruta, widget):
+
+        import tkinter.messagebox as messagebox
+        import os
+
+        confirmar = messagebox.askyesno(
+            "Eliminar imagen",
+            "¿Eliminar esta imagen?"
+        )
+
+        if not confirmar:
+            return
+
+        try:
+
+            os.remove(ruta)
+
+            # eliminar miniatura del panel
+            widget.destroy()
+
+            # quitar de la lista interna
+            if ruta in self.state.imagenes:
+                self.state.imagenes.remove(ruta)
+
+        except Exception as e:
+
+            print("Error eliminando imagen:", e)
     def _bind_mousewheel(self, event):
         self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
@@ -70,6 +101,7 @@ class PreviewPanel:
                             "<Button-1>",
                             lambda e, r=ruta_img: callback_click(r)
                         )
+                        lbl.bind("<Button-3>", lambda e, r=ruta_img, w=lbl: self.eliminar_imagen(r, w))
 
                         columna += 1
                         if columna == 3:

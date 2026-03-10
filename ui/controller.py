@@ -472,4 +472,4 @@ class Controller:
         #2. en el boton de refresh, al dar click me reiniciar y me borra la ubicacion
         #3. 
         #4. poder eliminar imagenes 
-        #5. desaparecio el nombre de la carpeta y la cantidad de carpetas porque estaban los nombres donde esta el boton de refresh 
+        #5. 
