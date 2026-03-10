@@ -301,8 +301,10 @@ class Controller:
         try:
             index = self.layout.list_sub.nearest(event.y)
 
-            self.layout.list_sub.selection_clear(0, tk.END)
-            self.layout.list_sub.selection_set(index)
+            # Solo cambiar selección si el elemento no está ya seleccionado
+            if index not in self.layout.list_sub.curselection():
+                self.layout.list_sub.selection_clear(0, tk.END)
+                self.layout.list_sub.selection_set(index)
 
             self.layout.menu_carpetas.post(event.x_root, event.y_root)
 
@@ -371,39 +373,57 @@ class Controller:
 
         entry.bind("<Return>", confirmar)
         entry.bind("<FocusOut>", lambda e: entry.destroy())
+
     # ==========================
-    # ELIMINAR CARPETA
+    # ELIMINAR CARPETAS
     # ==========================
 
     def eliminar_carpeta(self):
 
-        if not self.layout.list_sub.curselection():
-            return
+        indices = self.layout.list_sub.curselection()
 
-        indice = self.layout.list_sub.curselection()[0]
-        ruta = self.state.subcarpetas[indice]
+        if not indices:
+            return
 
         import tkinter.messagebox as messagebox
 
         confirmar = messagebox.askyesno(
-            "Eliminar carpeta",
-            "¿Seguro que deseas eliminar esta carpeta?"
+            "Eliminar carpetas",
+            f"¿Eliminar {len(indices)} carpeta(s)?"
         )
 
         if not confirmar:
             return
 
+        import shutil
+
+        eliminadas = 0
+
         try:
-            import shutil
-            shutil.rmtree(ruta)
 
-            del self.state.subcarpetas[indice]
-            self.layout.list_sub.delete(indice)
+            # recorrer de atrás hacia adelante
+            for indice in reversed(indices):
 
-            self.notifier.mostrar("Carpeta eliminada", "green")
+                ruta = self.state.subcarpetas[indice]
+
+                shutil.rmtree(ruta)
+
+                del self.state.subcarpetas[indice]
+                self.layout.list_sub.delete(indice)
+
+                eliminadas += 1
+
+            self.notifier.mostrar(
+                f"{eliminadas} carpeta(s) eliminadas",
+                "green"
+            )
 
         except Exception as e:
-            self.notifier.mostrar("Error al eliminar carpeta", "red")
+
+            self.notifier.mostrar(
+                "Error al eliminar carpetas",
+                "red"
+            )
 
     # ==========================
     # GUARDAR

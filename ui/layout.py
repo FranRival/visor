@@ -38,7 +38,7 @@ class Layout:
         )
         self.btn_refresh.pack(side=tk.LEFT, padx=5)
 
-        self.list_sub = tk.Listbox(self.frame_izq)
+        self.list_sub = tk.Listbox(self.frame_izq, selectmode=tk.EXTENDED)
         self.list_sub.pack(fill=tk.X, padx=5)
 
         # ========================
