@@ -112,5 +112,21 @@ class Layout:
             text="Abrir carpeta AAA"
         )
         self.btn_open.pack(pady=5, padx=10, fill=tk.X)
-                
-        
+
+
+         #eliminar carpeta       
+        self.menu_carpetas = tk.Menu(self.root, tearoff=0)
+
+        self.menu_carpetas.add_command(
+            label="Abrir carpeta"
+        )
+
+        self.menu_carpetas.add_command(
+            label="Cambiar nombre"
+        )
+
+        self.menu_carpetas.add_separator()
+
+        self.menu_carpetas.add_command(
+            label="Eliminar carpeta"
+        )

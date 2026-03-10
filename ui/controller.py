@@ -1,5 +1,4 @@
 import os
-import os
 import tkinter as tk
 
 
@@ -37,6 +36,24 @@ class Controller:
         self.layout.canvas.bind("<B1-Motion>", self.arrastrar)
 
         self.layout.root.bind("s", self.guardar)
+
+        # MENU CONTEXTUAL
+        self.layout.menu_carpetas.entryconfig(
+            "Abrir carpeta",
+            command=self.abrir_carpeta
+        )
+
+        self.layout.menu_carpetas.entryconfig(
+            "Cambiar nombre",
+            command=self.renombrar_carpeta
+        )
+
+        self.layout.menu_carpetas.entryconfig(
+            "Eliminar carpeta",
+            command=self.eliminar_carpeta
+        )
+
+        self.layout.list_sub.bind("<Button-3>", self.menu_click_derecho)
 
     # ==========================
     # CARPETA
@@ -116,8 +133,6 @@ class Controller:
             image=img
         )
 
-    
-
     # ==========================
     # COPIAR RUTA
     # ==========================
@@ -136,7 +151,6 @@ class Controller:
 
         self.notifier.mostrar("Ruta copiada al portapapeles", "green")
 
-
     # ==========================
     # ABRIR CARPETA AAA
     # ==========================
@@ -154,6 +168,70 @@ class Controller:
             return
 
         os.startfile(carpeta)
+
+    # ==========================
+    # ABRIR CARPETA
+    # ==========================
+
+    def abrir_carpeta(self):
+
+        if not self.layout.list_sub.curselection():
+            return
+
+        indice = self.layout.list_sub.curselection()[0]
+        ruta = self.state.subcarpetas[indice]
+
+        os.startfile(ruta)
+
+    # ==========================
+    # RENOMBRAR CARPETA
+    # ==========================
+
+    def renombrar_carpeta(self):
+
+        if not self.layout.list_sub.curselection():
+            return
+
+        indice = self.layout.list_sub.curselection()[0]
+        ruta_actual = self.state.subcarpetas[indice]
+
+        import tkinter.simpledialog as simpledialog
+        import tkinter.messagebox as messagebox
+
+        nombre_actual = os.path.basename(ruta_actual)
+
+        nuevo_nombre = simpledialog.askstring(
+            "Cambiar nombre",
+            "Nuevo nombre de carpeta:",
+            initialvalue=nombre_actual
+        )
+
+        if not nuevo_nombre:
+            return
+
+        nueva_ruta = os.path.join(
+            os.path.dirname(ruta_actual),
+            nuevo_nombre
+        )
+
+        try:
+
+            os.rename(ruta_actual, nueva_ruta)
+
+            self.state.subcarpetas[indice] = nueva_ruta
+
+            self.layout.list_sub.delete(indice)
+            self.layout.list_sub.insert(
+                indice,
+                f"{indice+1}. {nuevo_nombre}"
+            )
+
+        except Exception as e:
+
+            messagebox.showerror(
+                "Error",
+                f"No se pudo renombrar.\n{e}"
+            )
 
     # ==========================
     # DRAG
@@ -188,6 +266,57 @@ class Controller:
         self.state.crop_y = nuevo_y
 
         self.renderizar()
+
+    # ==========================
+    # MENU CLICK DERECHO
+    # ==========================
+
+    def menu_click_derecho(self, event):
+
+        try:
+            index = self.layout.list_sub.nearest(event.y)
+
+            self.layout.list_sub.selection_clear(0, tk.END)
+            self.layout.list_sub.selection_set(index)
+
+            self.layout.menu_carpetas.post(event.x_root, event.y_root)
+
+        except:
+            pass
+
+    # ==========================
+    # ELIMINAR CARPETA
+    # ==========================
+
+    def eliminar_carpeta(self):
+
+        if not self.layout.list_sub.curselection():
+            return
+
+        indice = self.layout.list_sub.curselection()[0]
+        ruta = self.state.subcarpetas[indice]
+
+        import tkinter.messagebox as messagebox
+
+        confirmar = messagebox.askyesno(
+            "Eliminar carpeta",
+            "¿Seguro que deseas eliminar esta carpeta?"
+        )
+
+        if not confirmar:
+            return
+
+        try:
+            import shutil
+            shutil.rmtree(ruta)
+
+            del self.state.subcarpetas[indice]
+            self.layout.list_sub.delete(indice)
+
+            self.notifier.mostrar("Carpeta eliminada", "green")
+
+        except Exception as e:
+            self.notifier.mostrar("Error al eliminar carpeta", "red")
 
     # ==========================
     # GUARDAR

@@ -9,6 +9,22 @@ class PreviewPanel:
         self.state = state
         self.thumb_size = thumb_size
 
+        # ==========================
+        # SCROLL CON RUEDA DEL MOUSE
+        # ==========================
+
+        self.canvas.bind("<Enter>", self._bind_mousewheel)
+        self.canvas.bind("<Leave>", self._unbind_mousewheel)
+
+    def _bind_mousewheel(self, event):
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
+    def _unbind_mousewheel(self, event):
+        self.canvas.unbind_all("<MouseWheel>")
+
+    def _on_mousewheel(self, event):
+        self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
     def limpiar(self):
         for widget in self.frame.winfo_children():
             widget.destroy()
@@ -32,6 +48,7 @@ class PreviewPanel:
             LOTE = 8
 
             for _ in range(LOTE):
+
                 if index >= len(self.state.imagenes):
                     self.canvas.configure(scrollregion=self.canvas.bbox("all"))
                     return
@@ -48,7 +65,11 @@ class PreviewPanel:
                         lbl = tk.Label(self.frame, image=mini, cursor="hand2")
                         lbl.image = mini
                         lbl.grid(row=fila, column=columna, padx=5, pady=5)
-                        lbl.bind("<Button-1>", lambda e, r=ruta_img: callback_click(r))
+
+                        lbl.bind(
+                            "<Button-1>",
+                            lambda e, r=ruta_img: callback_click(r)
+                        )
 
                         columna += 1
                         if columna == 3:
