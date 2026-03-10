@@ -21,8 +21,22 @@ class Layout:
         self.frame_izq.pack(side=tk.LEFT, fill=tk.Y)
         self.frame_izq.pack_propagate(False)
 
-        self.btn_select = tk.Button(self.frame_izq, text="Seleccionar Carpeta")
-        self.btn_select.pack(pady=10)
+        
+        # CONTENEDOR BOTONES SUPERIORES
+        self.top_buttons = tk.Frame(self.frame_izq)
+        self.top_buttons.pack(pady=10)
+
+        self.btn_select = tk.Button(
+            self.top_buttons,
+            text="Seleccionar Carpeta"
+        )
+        self.btn_select.pack(side=tk.LEFT, padx=5)
+
+        self.btn_refresh = tk.Button(
+            self.top_buttons,
+            text="Refresh"
+        )
+        self.btn_refresh.pack(side=tk.LEFT, padx=5)
 
         self.list_sub = tk.Listbox(self.frame_izq)
         self.list_sub.pack(fill=tk.X, padx=5)

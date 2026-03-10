@@ -25,8 +25,11 @@ class Controller:
     # ==========================
 
     def bind(self):
+        self.layout.btn_refresh.config(command=self.refresh_subcarpetas)
         self.layout.btn_select.config(command=self.seleccionar_carpeta)
         self.layout.list_sub.bind("<<ListboxSelect>>", self.cargar_subcarpeta)
+        self.layout.list_sub.bind("<Double-Button-1>", self.renombrar_inline)
+        self.layout.root.bind("<F2>", self.renombrar_inline)
 
         self.layout.btn_copy.config(command=self.copiar_ruta)
         self.layout.btn_open.config(command=self.abrir_carpeta_aaa)
@@ -73,6 +76,28 @@ class Controller:
             nombre = os.path.basename(ruta)
             self.layout.list_sub.insert("end", f"{i+1}. {nombre}")
 
+
+
+    # ==========================
+    # REFRESH SUBCARPETAS
+    # ==========================
+
+    def refresh_subcarpetas(self):
+
+        if not self.state.carpeta_madre:
+            return
+
+        carpeta = self.state.carpeta_madre
+
+        self.state.subcarpetas = self.file_manager.listar_subcarpetas(carpeta)
+
+        self.layout.list_sub.delete(0, "end")
+
+        for i, ruta in enumerate(self.state.subcarpetas):
+            nombre = os.path.basename(ruta)
+            self.layout.list_sub.insert("end", f"{i+1}. {nombre}")
+
+        self.notifier.mostrar("Lista actualizada", "green")
     # ==========================
     # SUBCARPETA
     # ==========================
@@ -284,6 +309,68 @@ class Controller:
         except:
             pass
 
+
+    # ==========================
+    # RENOMBRAR INLINE
+    # ==========================
+
+    def renombrar_inline(self, event=None):
+
+        if not self.layout.list_sub.curselection():
+            return
+
+        index = self.layout.list_sub.curselection()[0]
+        ruta_actual = self.state.subcarpetas[index]
+
+        nombre_actual = os.path.basename(ruta_actual)
+
+        # posición del item en el listbox
+        bbox = self.layout.list_sub.bbox(index)
+
+        if not bbox:
+            return
+
+        x, y, w, h = bbox
+
+        entry = tk.Entry(self.layout.list_sub)
+        entry.insert(0, nombre_actual)
+        entry.select_range(0, tk.END)
+
+        entry.place(x=x, y=y, width=w, height=h)
+        entry.focus()
+
+        def confirmar(event=None):
+
+            nuevo_nombre = entry.get().strip()
+
+            if not nuevo_nombre:
+                entry.destroy()
+                return
+
+            nueva_ruta = os.path.join(
+                os.path.dirname(ruta_actual),
+                nuevo_nombre
+            )
+
+            try:
+
+                os.rename(ruta_actual, nueva_ruta)
+
+                self.state.subcarpetas[index] = nueva_ruta
+
+                self.layout.list_sub.delete(index)
+                self.layout.list_sub.insert(index, f"{index+1}. {nuevo_nombre}")
+
+                self.notifier.mostrar("Carpeta renombrada", "green")
+
+            except Exception as e:
+
+                self.notifier.mostrar("Error al renombrar", "red")
+
+            entry.destroy()
+
+        entry.bind("<Return>", confirmar)
+        entry.bind("<FocusOut>", lambda e: entry.destroy())
     # ==========================
     # ELIMINAR CARPETA
     # ==========================
