@@ -37,8 +37,9 @@ class Layout:
 
         
         # CONTENEDOR BOTONES SUPERIORES
+        # CONTENEDOR SUPERIOR
         self.top_buttons = tk.Frame(self.frame_izq)
-        self.top_buttons.pack(pady=10)
+        self.top_buttons.pack(fill=tk.X, pady=10)
 
         self.btn_select = tk.Button(
             self.top_buttons,
@@ -51,6 +52,21 @@ class Layout:
             text="Refresh"
         )
         self.btn_refresh.pack(side=tk.LEFT, padx=5)
+
+        # etiqueta nombre carpeta
+        self.label_carpeta = tk.Label(
+            self.top_buttons,
+            text="Carpeta: -",
+            anchor="w"
+        )
+        self.label_carpeta.pack(side=tk.LEFT, padx=10)
+
+        # contador carpetas
+        self.label_total = tk.Label(
+            self.top_buttons,
+            text="(0)"
+        )
+        self.label_total.pack(side=tk.LEFT)
 
         # ========================
         # SPLIT VERTICAL IZQUIERDO

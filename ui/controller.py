@@ -470,6 +470,6 @@ class Controller:
         #cambios
         #1. En el panel del explorador necesitamos un modo de edicion. un check. ese check va a seleccionar varias carpetas y luego eliminar
         #2. en el boton de refresh, al dar click me reiniciar y me borra la ubicacion
-        #3. necesitamos poder hacer mas grande el panel del explorador. con un triangulo en la extrema derecha. 
+        #3. 
         #4. poder eliminar imagenes 
         #5. desaparecio el nombre de la carpeta y la cantidad de carpetas porque estaban los nombres donde esta el boton de refresh 
