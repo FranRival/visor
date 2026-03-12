@@ -55,7 +55,7 @@ class Layout:
 
         self.btn_edit = tk.Button(
             self.top_buttons,
-            text="Modo edición"
+            text="Edición"
         )
         self.btn_edit.pack(side=tk.LEFT, padx=5)
 
@@ -152,6 +152,22 @@ class Layout:
             self.frame_derecho,
             bg="gray"
         )
+
+        # ========================
+        # ZOOM SLIDER
+        # ========================
+
+        self.zoom_slider = tk.Scale(
+            self.frame_derecho,
+            from_=50,
+            to=200,
+            orient="horizontal",
+            label="Zoom %",
+            length=200
+        )
+
+        self.zoom_slider.set(100)
+        self.zoom_slider.pack(side=tk.BOTTOM, pady=5)
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         self.match_frame = tk.Frame(

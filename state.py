@@ -22,3 +22,5 @@ class AppState:
 
         self.modo_edicion = False
         self.checks_carpetas = set()
+
+        self.zoom = 1.0

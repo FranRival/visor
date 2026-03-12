@@ -60,6 +60,8 @@ class Controller:
 
         self.layout.list_sub.bind("<Button-3>", self.menu_click_derecho)
 
+        self.layout.zoom_slider.config(command=self.cambiar_zoom)
+
     # ==========================
     # CARPETA
     # ==========================
@@ -91,7 +93,7 @@ class Controller:
             self.layout.btn_edit.config(text="Salir edición")
             self.notifier.mostrar("Modo edición activado", "cyan")
         else:
-            self.layout.btn_edit.config(text="Modo edición")
+            self.layout.btn_edit.config(text="Edición")
             self.state.checks_carpetas.clear()
             self.notifier.mostrar("Modo edición desactivado", "cyan")
 
@@ -244,7 +246,8 @@ class Controller:
             self.state.crop_x,
             self.state.crop_y,
             self.state.crop_w,
-            self.state.crop_h
+            self.state.crop_h,
+            zoom=self.state.zoom
         )
 
         self.state.imagen_actual = img
@@ -293,9 +296,23 @@ class Controller:
 
         os.startfile(carpeta)
 
+
+    # ==========================
+    # ZOOM
+    # ==========================
+
+    def cambiar_zoom(self, valor):
+
+        zoom = int(valor) / 100
+        self.state.zoom = zoom
+
+        self.renderizar()
+
+
     # ==========================
     # ABRIR CARPETA
     # ==========================
+
 
     def abrir_carpeta(self):
 
