@@ -7,12 +7,14 @@ class FileManager:
         return filedialog.askdirectory()
 
     def listar_subcarpetas(self, carpeta_madre):
-        return [
-            os.path.join(carpeta_madre, f)
-            for f in os.listdir(carpeta_madre)
-            if os.path.isdir(os.path.join(carpeta_madre, f))
-        ]
-
+        return sorted(
+            [
+                os.path.join(carpeta_madre, f)
+                for f in os.listdir(carpeta_madre)
+                if os.path.isdir(os.path.join(carpeta_madre, f))
+            ],
+            key=lambda x: int(os.path.basename(x)) if os.path.basename(x).isdigit() else x
+        )
     def crear_carpeta(self, ruta):
         os.makedirs(ruta, exist_ok=True)
 

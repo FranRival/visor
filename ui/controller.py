@@ -80,6 +80,11 @@ class Controller:
             nombre = os.path.basename(ruta)
             self.layout.list_sub.insert("end", f"{i+1}. {nombre}")
 
+        if self.state.subcarpetas:
+            self.layout.list_sub.selection_set(0)
+            self.layout.list_sub.activate(0)
+            self.actualizar_info_carpeta()    
+
 
     # ==========================
     # MODO EDICION
@@ -126,6 +131,7 @@ class Controller:
                 texto = f"{i+1}. {nombre}"
 
             self.layout.list_sub.insert("end", texto)
+            self.actualizar_info_carpeta()
    
     # ==========================
     # REFRESH SUBCARPETAS
@@ -181,6 +187,7 @@ class Controller:
             )
 
         self.notifier.mostrar("Lista actualizada", "green")
+        self.actualizar_info_carpeta()
     # ==========================
     # SUBCARPETA
     # ==========================
@@ -192,6 +199,8 @@ class Controller:
 
         indice = self.layout.list_sub.curselection()[0]
         ruta = self.state.subcarpetas[indice]
+
+        self.actualizar_info_carpeta()
 
         # ==========================
         # MODO EDICION (CHECKS)
@@ -582,10 +591,26 @@ class Controller:
 
         self.state.contador_guardado += 1
 
+    # ==========================
+    # 
+    # ==========================
 
-        #cambios
-        #1. En el panel del explorador necesitamos un modo de edicion. un check. ese check va a seleccionar varias carpetas y luego eliminar
-        #2. en el boton de refresh, al dar click me reiniciar y me borra la ubicacion
-        #3. 
-        #4. 
-        #5. 
+
+    def actualizar_info_carpeta(self):
+
+        seleccion = self.layout.list_sub.curselection()
+
+        if not seleccion:
+            self.layout.label_carpeta.config(text="Carpeta: -")
+            self.layout.label_total.config(text=f"({len(self.state.subcarpetas)})")
+            return
+
+        indice = seleccion[0]
+        ruta = self.state.subcarpetas[indice]
+
+        nombre = os.path.basename(ruta)
+
+        self.layout.label_carpeta.config(text=f"Carpeta: {nombre}")
+        self.layout.label_total.config(
+            text=f"({indice+1}/{len(self.state.subcarpetas)})"
+        )

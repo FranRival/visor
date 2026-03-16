@@ -50,3 +50,11 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    
+        #cambios
+        #1. 
+        #2. en el boton de refresh, al dar click me reiniciar y me borra la ubicacion -- no funcional. 
+        #3. 
+        #4. We need a modo edicion de carpetas. Renombrar. 
+        #5. 
