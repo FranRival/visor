@@ -269,6 +269,40 @@ class Controller:
             image=img
         )
 
+        # ==========================
+        # NUMERO EN ESQUINA
+        # ==========================
+
+        numero = str(self.state.contador_guardado)
+
+        ancho = self.layout.canvas.winfo_width()
+        alto = self.layout.canvas.winfo_height()
+
+        # texto
+        text_id = self.layout.canvas.create_text(
+            ancho - 20,
+            alto - 20,
+            text=numero,
+            fill="white",
+            font=("Arial", 28, "bold"),
+            anchor="se"
+        )
+
+        # fondo negro detrás (mejor visibilidad)
+        bbox = self.layout.canvas.bbox(text_id)
+
+        rect_id = self.layout.canvas.create_rectangle(
+            bbox[0] - 10,
+            bbox[1] - 5,
+            bbox[2] + 10,
+            bbox[3] + 5,
+            fill="black",
+            outline=""
+        )
+
+        # poner fondo detrás del texto
+        self.layout.canvas.tag_lower(rect_id, text_id)
+
     # ==========================
     # COPIAR RUTA
     # ==========================
@@ -596,21 +630,27 @@ class Controller:
     # ==========================
 
 
+
     def actualizar_info_carpeta(self):
 
+        # 🔹 nombre carpeta madre
+        if self.state.carpeta_madre:
+            nombre_madre = os.path.basename(self.state.carpeta_madre)
+            self.layout.label_carpeta.config(text=f"Carpeta: {nombre_madre}")
+        else:
+            self.layout.label_carpeta.config(text="Carpeta: -")
+
+        # 🔹 contador subcarpetas
         seleccion = self.layout.list_sub.curselection()
 
+        total = len(self.state.subcarpetas)
+
         if not seleccion:
-            self.layout.label_carpeta.config(text="Carpeta: -")
-            self.layout.label_total.config(text=f"({len(self.state.subcarpetas)})")
+            self.layout.label_total.config(text=f"(0/{total})")
             return
 
         indice = seleccion[0]
-        ruta = self.state.subcarpetas[indice]
 
-        nombre = os.path.basename(ruta)
-
-        self.layout.label_carpeta.config(text=f"Carpeta: {nombre}")
         self.layout.label_total.config(
-            text=f"({indice+1}/{len(self.state.subcarpetas)})"
+            text=f"({indice+1}/{total})"
         )
