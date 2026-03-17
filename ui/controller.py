@@ -733,21 +733,42 @@ class Controller:
             self.notifier.mostrar("No hay imagen", "red")
             return
 
-        # tamaño del canvas
+        img = self.state.imagen_original
+
         canvas_w = self.layout.canvas.winfo_width()
         canvas_h = self.layout.canvas.winfo_height()
 
-        img = self.state.imagen_original
+        # recrear exactamente la misma lógica de render
+        img_display = img.copy()
+        img_display.thumbnail((800, 500))
 
-        # calcular escala (igual que en render)
-        escala_x = img.width / canvas_w
-        escala_y = img.height / canvas_h
+        display_w, display_h = img_display.size
 
-        # convertir coordenadas
-        rx0 = int(x0 * escala_x)
-        ry0 = int(y0 * escala_y)
-        rx1 = int(x1 * escala_x)
-        ry1 = int(y1 * escala_y)
+        # calcular offset (imagen centrada)
+        offset_x = (canvas_w - display_w) / 2
+        offset_y = (canvas_h - display_h) / 2
+
+        # ajustar coordenadas del mouse al área de la imagen
+        x0_adj = x0 - offset_x
+        y0_adj = y0 - offset_y
+        x1_adj = x1 - offset_x
+        y1_adj = y1 - offset_y
+
+        # clamp dentro de la imagen visible
+        x0_adj = max(0, min(x0_adj, display_w))
+        x1_adj = max(0, min(x1_adj, display_w))
+        y0_adj = max(0, min(y0_adj, display_h))
+        y1_adj = max(0, min(y1_adj, display_h))
+
+        # escala real
+        escala_x = img.width / display_w
+        escala_y = img.height / display_h
+
+        # convertir a coordenadas reales
+        rx0 = int(x0_adj * escala_x)
+        ry0 = int(y0_adj * escala_y)
+        rx1 = int(x1_adj * escala_x)
+        ry1 = int(y1_adj * escala_y)
 
         # clamp (seguridad)
         rx0 = max(0, min(rx0, img.width))
