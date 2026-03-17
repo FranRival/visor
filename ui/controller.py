@@ -767,6 +767,10 @@ class Controller:
             f"{self.state.contador_guardado}.jpg"
         )
 
+        # convertir si tiene alpha
+        if recorte.mode == "RGBA":
+            recorte = recorte.convert("RGB")
+
         recorte.save(ruta_guardado, quality=95)
 
         self.notifier.mostrar("Recorte manual guardado", "cyan")
