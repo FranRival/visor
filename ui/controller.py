@@ -439,6 +439,20 @@ class Controller:
 
     def detener_arrastre(self, event):
         if self.state.modo_tijeras:
+
+            if not self.state.tijeras_inicio:
+                return
+
+            x0, y0 = self.state.tijeras_inicio
+            x1, y1 = event.x, event.y
+
+            # normalizar coordenadas (importante)
+            x0, x1 = sorted([x0, x1])
+            y0, y1 = sorted([y0, y1])
+
+            self.guardar_recorte_manual(x0, y0, x1, y1)
+
+            self.state.tijeras_inicio = None
             return
 
         self.state.dragging = False
@@ -711,3 +725,50 @@ class Controller:
             self.layout.btn_scissors.config(text="✂️ Tijeras")
             self.notifier.mostrar("Modo tijeras desactivado", "cyan")
 
+
+
+    def guardar_recorte_manual(self, x0, y0, x1, y1):
+
+        if self.state.imagen_original is None:
+            self.notifier.mostrar("No hay imagen", "red")
+            return
+
+        # tamaño del canvas
+        canvas_w = self.layout.canvas.winfo_width()
+        canvas_h = self.layout.canvas.winfo_height()
+
+        img = self.state.imagen_original
+
+        # calcular escala (igual que en render)
+        escala_x = img.width / canvas_w
+        escala_y = img.height / canvas_h
+
+        # convertir coordenadas
+        rx0 = int(x0 * escala_x)
+        ry0 = int(y0 * escala_y)
+        rx1 = int(x1 * escala_x)
+        ry1 = int(y1 * escala_y)
+
+        # clamp (seguridad)
+        rx0 = max(0, min(rx0, img.width))
+        rx1 = max(0, min(rx1, img.width))
+        ry0 = max(0, min(ry0, img.height))
+        ry1 = max(0, min(ry1, img.height))
+
+        # recorte real
+        recorte = img.crop((rx0, ry0, rx1, ry1))
+
+        # carpeta AAA
+        carpeta = os.path.join(self.state.carpeta_madre, "AAA")
+        self.file_manager.crear_carpeta(carpeta)
+
+        ruta_guardado = os.path.join(
+            carpeta,
+            f"{self.state.contador_guardado}.jpg"
+        )
+
+        recorte.save(ruta_guardado, quality=95)
+
+        self.notifier.mostrar("Recorte manual guardado", "cyan")
+
+        self.state.contador_guardado += 1
