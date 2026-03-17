@@ -35,9 +35,10 @@ class Layout:
 
         self.main_split.add(self.frame_izq)
 
-        
-        # CONTENEDOR BOTONES SUPERIORES
-        # CONTENEDOR SUPERIOR
+        # ========================
+        # CONTENEDOR BOTONES
+        # ========================
+
         self.top_buttons = tk.Frame(self.frame_izq)
         self.top_buttons.pack(fill=tk.X, pady=10)
 
@@ -65,21 +66,6 @@ class Layout:
         )
         self.btn_scissors.pack(side=tk.LEFT, padx=5)
 
-        # etiqueta nombre carpeta
-        self.label_carpeta = tk.Label(
-            self.top_buttons,
-            text="Carpeta: -",
-            anchor="w"
-        )
-        self.label_carpeta.pack(side=tk.LEFT, padx=10)
-
-        # contador carpetas
-        self.label_total = tk.Label(
-            self.top_buttons,
-            text="(0)"
-        )
-        self.label_total.pack(side=tk.LEFT)
-
         # ========================
         # SPLIT VERTICAL IZQUIERDO
         # ========================
@@ -106,7 +92,6 @@ class Layout:
         self.list_sub.pack(fill=tk.BOTH, expand=True)
 
         self.left_split.add(self.list_container, height=150)
-
 
         # ========================
         # PREVIEW SCROLL
@@ -145,7 +130,6 @@ class Layout:
         self.canvas_preview.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.scrollbar_preview.pack(side=tk.RIGHT, fill=tk.Y)
 
-        
         # ========================
         # FRAME DERECHO
         # ========================
@@ -153,34 +137,34 @@ class Layout:
         self.frame_derecho = tk.Frame(self.main_split)
         self.main_split.add(self.frame_derecho)
 
-        # Dividimos horizontalmente
+        # ========================
+        # CANVAS PRINCIPAL
+        # ========================
+
+        # ========================
+        # CONTENEDOR PRINCIPAL DERECHO
+        # ========================
+
+        self.main_area = tk.Frame(self.frame_derecho)
+        self.main_area.pack(fill=tk.BOTH, expand=True)
+
+        # CANVAS
         self.canvas = tk.Canvas(
-            self.frame_derecho,
+            self.main_area,
             bg="gray"
         )
-
-        # ========================
-        # ZOOM SLIDER
-        # ========================
-
-        self.zoom_slider = tk.Scale(
-            self.frame_derecho,
-            from_=50,
-            to=200,
-            orient="horizontal",
-            label="Zoom %",
-            length=200
-        )
-
-        self.zoom_slider.set(100)
-        self.zoom_slider.pack(side=tk.BOTTOM, pady=5)
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
+        # PANEL DERECHO (MATCH)
         self.match_frame = tk.Frame(
-            self.frame_derecho,
+            self.main_area,
             bg="black",
             width=180
         )
+        self.match_frame.pack(side=tk.RIGHT, fill=tk.Y)
+        self.match_frame.pack_propagate(False)
+
+
         self.match_frame.pack(side=tk.RIGHT, fill=tk.Y)
         self.match_frame.pack_propagate(False)
 
@@ -193,26 +177,59 @@ class Layout:
         )
         self.match_label.pack(pady=20)
 
-        # Espaciador
         self.spacer = tk.Frame(self.match_frame, bg="black")
         self.spacer.pack(expand=True)
 
-        # Botón copiar ruta
         self.btn_copy = tk.Button(
             self.match_frame,
             text="Copiar ruta"
         )
         self.btn_copy.pack(pady=5, padx=10, fill=tk.X)
 
-        # Botón abrir carpeta AAA
         self.btn_open = tk.Button(
             self.match_frame,
             text="Abrir carpeta AAA"
         )
         self.btn_open.pack(pady=5, padx=10, fill=tk.X)
 
+        # ========================
+        # BARRA INFERIOR (ZOOM + INFO)
+        # ========================
 
-         #eliminar carpeta       
+        self.bottom_bar = tk.Frame(self.frame_derecho)
+        self.bottom_bar.pack(side=tk.BOTTOM, fill=tk.X, pady=5)
+
+        # ZOOM
+        self.zoom_slider = tk.Scale(
+            self.bottom_bar,
+            from_=50,
+            to=200,
+            orient="horizontal",
+            label="Zoom %",
+            length=200
+        )
+        self.zoom_slider.set(100)
+        self.zoom_slider.pack(side=tk.LEFT, padx=10)
+
+        # NOMBRE CARPETA
+        self.label_carpeta = tk.Label(
+            self.bottom_bar,
+            text="Carpeta: -",
+            anchor="w"
+        )
+        self.label_carpeta.pack(side=tk.LEFT, padx=10)
+
+        # CONTADOR
+        self.label_total = tk.Label(
+            self.bottom_bar,
+            text="(0/0)"
+        )
+        self.label_total.pack(side=tk.LEFT)
+
+        # ========================
+        # MENU CONTEXTUAL
+        # ========================
+
         self.menu_carpetas = tk.Menu(self.root, tearoff=0)
 
         self.menu_carpetas.add_command(
