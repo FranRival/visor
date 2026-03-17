@@ -424,12 +424,48 @@ class Controller:
     # ==========================
 
     def iniciar_arrastre(self, event):
+        if self.state.modo_tijeras:
+            self.state.tijeras_inicio = (event.x, event.y)
+
+            # borrar rectángulo anterior si existe
+            if self.state.tijeras_rect:
+                self.layout.canvas.delete(self.state.tijeras_rect)
+                self.state.tijeras_rect = None
+
+            return
+
+        # modo normal
         self.state.dragging = True
 
     def detener_arrastre(self, event):
+        if self.state.modo_tijeras:
+            return
+
         self.state.dragging = False
 
     def arrastrar(self, event):
+        if self.state.modo_tijeras:
+
+            if not self.state.tijeras_inicio:
+                return
+
+            x0, y0 = self.state.tijeras_inicio
+            x1, y1 = event.x, event.y
+
+            # borrar anterior
+            if self.state.tijeras_rect:
+                self.layout.canvas.delete(self.state.tijeras_rect)
+
+            # dibujar nuevo
+            self.state.tijeras_rect = self.layout.canvas.create_rectangle(
+                x0, y0, x1, y1,
+                outline="red",
+                width=2
+            )
+
+            return
+
+        
         if not self.state.dragging:
             return
 

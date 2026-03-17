@@ -25,3 +25,6 @@ class AppState:
 
         self.zoom = 1.0
         self.modo_tijeras = False
+
+        self.tijeras_inicio = None
+        self.tijeras_rect = None
