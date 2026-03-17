@@ -59,6 +59,12 @@ class Layout:
         )
         self.btn_edit.pack(side=tk.LEFT, padx=5)
 
+        self.btn_scissors = tk.Button(
+            self.top_buttons,
+            text="✂️ Tijeras"
+        )
+        self.btn_scissors.pack(side=tk.LEFT, padx=5)
+
         # etiqueta nombre carpeta
         self.label_carpeta = tk.Label(
             self.top_buttons,

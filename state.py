@@ -24,3 +24,4 @@ class AppState:
         self.checks_carpetas = set()
 
         self.zoom = 1.0
+        self.modo_tijeras = False

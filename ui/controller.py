@@ -42,6 +42,8 @@ class Controller:
 
         self.layout.btn_edit.config(command=self.toggle_modo_edicion)
 
+        self.layout.btn_scissors.config(command=self.toggle_modo_tijeras)
+
         # MENU CONTEXTUAL
         self.layout.menu_carpetas.entryconfig(
             "Abrir carpeta",
@@ -654,3 +656,22 @@ class Controller:
         self.layout.label_total.config(
             text=f"({indice+1}/{total})"
         )
+
+
+    # ==========================
+    # tijeras
+    # ==========================
+
+
+
+    def toggle_modo_tijeras(self):
+
+        self.state.modo_tijeras = not self.state.modo_tijeras
+
+        if self.state.modo_tijeras:
+            self.layout.btn_scissors.config(text="Salir ✂️")
+            self.notifier.mostrar("Modo tijeras activado", "cyan")
+        else:
+            self.layout.btn_scissors.config(text="✂️ Tijeras")
+            self.notifier.mostrar("Modo tijeras desactivado", "cyan")
+
