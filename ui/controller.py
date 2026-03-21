@@ -126,7 +126,14 @@ class Controller:
         if not self.state.carpeta_madre:
             return
 
-        if not self.state.checks_carpetas:
+        # 🔥 obtener selección real
+        if self.state.modo_edicion:
+            carpetas_seleccionadas = list(self.state.checks_carpetas)
+        else:
+            indices = self.layout.list_sub.curselection()
+            carpetas_seleccionadas = [self.state.subcarpetas[i] for i in indices]
+
+        if not carpetas_seleccionadas:
             self.notifier.mostrar("No hay carpetas seleccionadas", "red")
             return
 
@@ -137,7 +144,7 @@ class Controller:
 
         movidas = 0
 
-        for ruta in list(self.state.checks_carpetas):
+        for ruta in carpetas_seleccionadas:
 
             nombre = os.path.basename(ruta)
             nueva_ruta = os.path.join(destino, nombre)
