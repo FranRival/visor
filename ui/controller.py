@@ -44,6 +44,35 @@ class Controller:
 
         self.layout.btn_scissors.config(command=self.toggle_modo_tijeras)
 
+        # ========================
+        # MENU CONTEXTUAL (FIX)
+        # ========================
+
+        self.layout.menu_carpetas.entryconfig(
+            "Abrir carpeta",
+            command=self.abrir_carpeta
+        )
+
+        self.layout.menu_carpetas.entryconfig(
+            "Cambiar nombre",
+            command=self.renombrar_carpeta
+        )
+
+        self.layout.menu_carpetas.entryconfig(
+            "Eliminar carpeta",
+            command=self.eliminar_carpeta
+        )
+
+        self.layout.menu_carpetas.entryconfig(
+            "Enviar a A",
+            command=lambda: self.mover_carpetas("A")
+        )
+
+        self.layout.menu_carpetas.entryconfig(
+            "Enviar a Marcas",
+            command=lambda: self.mover_carpetas("Marcas")
+        )
+
         
 
         # ========================
