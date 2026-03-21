@@ -48,30 +48,13 @@ class Controller:
         # MENU CONTEXTUAL (FIX)
         # ========================
 
-        self.layout.menu_carpetas.entryconfig(
-            "Abrir carpeta",
-            command=self.abrir_carpeta
-        )
+        menu = self.layout.menu_carpetas
 
-        self.layout.menu_carpetas.entryconfig(
-            "Cambiar nombre",
-            command=self.renombrar_carpeta
-        )
-
-        self.layout.menu_carpetas.entryconfig(
-            "Eliminar carpeta",
-            command=self.eliminar_carpeta
-        )
-
-        self.layout.menu_carpetas.entryconfig(
-            "Enviar a A",
-            command=lambda: self.mover_carpetas("A")
-        )
-
-        self.layout.menu_carpetas.entryconfig(
-            "Enviar a Marcas",
-            command=lambda: self.mover_carpetas("Marcas")
-        )
+        menu.entryconfig(0, command=self.abrir_carpeta)
+        menu.entryconfig(1, command=self.renombrar_carpeta)
+        menu.entryconfig(3, command=self.eliminar_carpeta)
+        menu.entryconfig(5, command=lambda: self.mover_carpetas("[A"))
+        menu.entryconfig(6, command=lambda: self.mover_carpetas("[Marcas"))
 
         
 
