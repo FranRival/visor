@@ -44,21 +44,11 @@ class Controller:
 
         self.layout.btn_scissors.config(command=self.toggle_modo_tijeras)
 
-        # MENU CONTEXTUAL
-        self.layout.menu_carpetas.entryconfig(
-            "Abrir carpeta",
-            command=self.abrir_carpeta
-        )
+        
 
-        self.layout.menu_carpetas.entryconfig(
-            "Cambiar nombre",
-            command=self.renombrar_carpeta
-        )
-
-        self.layout.menu_carpetas.entryconfig(
-            "Eliminar carpeta",
-            command=self.eliminar_carpeta
-        )
+        # ========================
+       
+        
 
         self.layout.list_sub.bind("<Button-3>", self.menu_click_derecho)
 
@@ -78,14 +68,18 @@ class Controller:
 
         self.layout.list_sub.delete(0, "end")
 
+        self.actualizar_info_carpeta()   
+
         for i, ruta in enumerate(self.state.subcarpetas):
             nombre = os.path.basename(ruta)
             self.layout.list_sub.insert("end", f"{i+1}. {nombre}")
 
+          
+
         if self.state.subcarpetas:
             self.layout.list_sub.selection_set(0)
             self.layout.list_sub.activate(0)
-            self.actualizar_info_carpeta()    
+               
 
 
     # ==========================
@@ -106,6 +100,50 @@ class Controller:
 
         self.actualizar_lista_checks()
 
+
+
+
+
+
+    # ==========================
+    # ENVIAR A CARPETAS A Y MARCA
+    # ==========================
+
+    def mover_carpetas(self, destino_nombre):
+
+        if not self.state.carpeta_madre:
+            return
+
+        if not self.state.checks_carpetas:
+            self.notifier.mostrar("No hay carpetas seleccionadas", "red")
+            return
+
+        destino = os.path.join(self.state.carpeta_madre, destino_nombre)
+        self.file_manager.crear_carpeta(destino)
+
+        import shutil
+
+        movidas = 0
+
+        for ruta in list(self.state.checks_carpetas):
+
+            nombre = os.path.basename(ruta)
+            nueva_ruta = os.path.join(destino, nombre)
+
+            try:
+                shutil.move(ruta, nueva_ruta)
+                movidas += 1
+            except Exception as e:
+                print("Error moviendo:", e)
+
+        self.state.checks_carpetas.clear()
+
+        self.refresh_subcarpetas()
+
+        self.notifier.mostrar(
+            f"{movidas} carpeta(s) movidas a {destino_nombre}",
+            "green"
+        )
 
 
     # ==========================
@@ -264,6 +302,12 @@ class Controller:
         self.state.imagen_actual = img
 
         self.layout.canvas.delete("all")
+
+        # borrar número anterior si existe
+        if hasattr(self, "numero_id"):
+            self.layout.canvas.delete(self.numero_id)
+            self.layout.canvas.delete(self.numero_bg_id)
+
         self.layout.canvas.create_image(
             400,
             250,
@@ -274,36 +318,46 @@ class Controller:
         # ==========================
         # NUMERO EN ESQUINA
         # ==========================
-
         numero = str(self.state.contador_guardado)
 
         ancho = self.layout.canvas.winfo_width()
         alto = self.layout.canvas.winfo_height()
 
-        # texto
-        text_id = self.layout.canvas.create_text(
+        # texto (inicial transparente-ish)
+        self.numero_id = self.layout.canvas.create_text(
             ancho - 20,
             alto - 20,
             text=numero,
-            fill="white",
-            font=("Arial", 28, "bold"),
+            fill="#ffffff",
+            font=("Arial", 32, "bold"),
             anchor="se"
         )
 
-        # fondo negro detrás (mejor visibilidad)
-        bbox = self.layout.canvas.bbox(text_id)
+        bbox = self.layout.canvas.bbox(self.numero_id)
 
-        rect_id = self.layout.canvas.create_rectangle(
-            bbox[0] - 10,
-            bbox[1] - 5,
-            bbox[2] + 10,
-            bbox[3] + 5,
-            fill="black",
+        self.numero_bg_id = self.layout.canvas.create_rectangle(
+            bbox[0] - 12,
+            bbox[1] - 6,
+            bbox[2] + 12,
+            bbox[3] + 6,
+            fill="#000000",
             outline=""
         )
 
-        # poner fondo detrás del texto
-        self.layout.canvas.tag_lower(rect_id, text_id)
+        self.layout.canvas.tag_lower(self.numero_bg_id, self.numero_id)
+        
+        def fade(step=0):
+            if step > 10:
+                return
+
+            alpha = int(255 * (step / 10))
+            color = f"#{alpha:02x}{alpha:02x}{alpha:02x}"
+
+            self.layout.canvas.itemconfig(self.numero_id, fill=color)
+
+            self.layout.canvas.after(20, lambda: fade(step + 1))
+
+        fade() 
 
     # ==========================
     # COPIAR RUTA

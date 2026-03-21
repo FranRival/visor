@@ -66,6 +66,18 @@ class Layout:
         )
         self.btn_scissors.pack(side=tk.LEFT, padx=5)
 
+        self.menu_carpetas = tk.Menu(self.root, tearoff=0)
+
+        self.menu_carpetas.add_separator()
+
+        self.menu_carpetas.add_command(
+            label="Enviar a A"
+        )
+
+        self.menu_carpetas.add_command(
+            label="Enviar a Marcas"
+        )
+
         # ========================
         # SPLIT VERTICAL IZQUIERDO
         # ========================
@@ -244,4 +256,14 @@ class Layout:
 
         self.menu_carpetas.add_command(
             label="Eliminar carpeta"
+        )
+
+        self.menu_carpetas.add_separator()
+
+        self.menu_carpetas.add_command(
+            label="Enviar a A"
+        )
+
+        self.menu_carpetas.add_command(
+            label="Enviar a Marcas"
         )
